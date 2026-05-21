@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:speech_balloon/speech_balloon.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'homepage.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -48,18 +49,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     super.dispose();
   }
 
-  void _nextPage() {
+  void _nextPage() async {
     if (_currentPage < 2) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeIn,
       );
     } else {
-      // Go to login page
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: ((context) => const HomePage())),
-      );
+      // Salva il nome del pulcino in SharedPreferences
+      final sp = await SharedPreferences.getInstance();
+      await sp.setString('chickName', _chickName);
+      debugPrint('Nome del pulcino salvato in SharedPreferences: $_chickName');
+
+      if (mounted) {
+        // Vai alla homepage
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: ((context) => const HomePage())),
+        );
+      }
     }
   }
 
@@ -130,8 +138,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
           // Animazione 
           Lottie.asset(
             'assets/hatching_chick.json',
-            width: 200,
-            height: 200,   
+            width: 150,
+            height: 150,   
             controller: _lottieController1,
             onLoaded: (composition) {
               _lottieController1.duration = composition.duration;
@@ -213,7 +221,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
               _lottieController2.duration = composition.duration;
               
               // Puoi modificare questi valori tra 0.0 (inizio) e 1.0 (fine)
-              final double startPoint = 0.43; // Punto di partenza
+              final double startPoint = 0.25; // Punto di partenza //0.43
               final double endPoint = 0.6;  // Punto finale
 
               // Se invece volessi farla ripetere in loop tra questi due punti, potresti usare:
