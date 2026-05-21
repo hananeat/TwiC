@@ -147,7 +147,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                 _lottieController1.repeat(
                  min: startPoint,
                  max: endPoint, 
-                 period: const Duration(milliseconds: 100)); 
+                 period: const Duration(milliseconds: 1000)); 
             },
           ),
           const SizedBox(height: 16),

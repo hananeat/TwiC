@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'login.dart';
 
 class SplashLogoScreen extends StatefulWidget {
-  const SplashLogoScreen({Key? key}) : super(key: key);
+  const SplashLogoScreen({super.key});
 
   @override
   State<SplashLogoScreen> createState() => _SplashLogoScreenState();
