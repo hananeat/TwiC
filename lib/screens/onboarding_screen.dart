@@ -24,8 +24,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
 
   late final AnimationController _lottieController1;
   late final AnimationController _lottieController2;
-  late final AnimationController _lottieController3;
-
+  
   @override
   void initState() {
     super.initState();
