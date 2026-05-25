@@ -80,7 +80,7 @@ class _LoginPageState extends State<LoginPage> {
 
               // --- NOME APP ---
               const Text(
-                'move with pip',
+                'TwiC',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -92,7 +92,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 8),
 
               const Text(
-                'Bentornata!',
+                'Hello!',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'login.dart';
+import 'package:google_fonts/google_fonts.dart'; // per cambiare il font
 
 class SplashLogoScreen extends StatefulWidget {
   const SplashLogoScreen({Key? key}) : super(key: key);
@@ -34,8 +35,13 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
 
   bool _showFinalTwiC = false; // quando true mostra TwiC grande
 
-  static const Color primaryPurple = Color(0xFF5D59B5);
-  static const Color bgLight = Color(0xFFEEF0FA);
+  //static const Color primaryPurple = Color(0xFF5D59B5);
+  //static const Color bgLight = Color(0xFFEEF0FA);
+
+  // Cambia i colori
+  static const Color primaryYellow = Color(0xFFFFD158);
+  static const Color primaryGreen = Color(0xFF4CAF50);
+  static const Color bgColor = Color(0xFFFFFDE7);
 
   @override
   void initState() {
@@ -115,7 +121,7 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgLight,
+      backgroundColor: bgColor,
       body: Padding(
         // Padding a sinistra — tutto allineato a sinistra
         padding: const EdgeInsets.only(left: 48.0),
@@ -148,7 +154,7 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
                         fontSize: _twicSize.value,
                         // ↑ la dimensione cresce durante l'animazione
                         fontWeight: FontWeight.bold,
-                        color: primaryPurple,
+                        color: primaryYellow,
                       ),
                     );
                   },
@@ -171,21 +177,22 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
           // Lettera dell'acronimo — sempre visibile e in grassetto
           Text(
             letter,
-            style: const TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: primaryPurple,
-            ),
+              color: primaryYellow,
+            ), // Stile del testo
           ),
           // Resto della parola — appare con il fade
           FadeTransition(
             opacity: anim,
             child: Text(
               rest,
-              style: const TextStyle(
-                fontSize: 32,
-                color: primaryPurple,
-              ),
+              style: GoogleFonts.poppins(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: primaryYellow,
+              ), // Stile del testo
             ),
           ),
         ],
