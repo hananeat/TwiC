@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:TwiC/utils/impact.dart';
 import 'onboarding_screen.dart';
-
 // Import di lottie che abbiamo usato per l'animazione del pulcino. 
 import 'package:lottie/lottie.dart';
 
@@ -19,8 +18,9 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
 
   // Controllers: "ascoltano" cosa scrive l'utente nei campi
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final Impact impact = Impact();
 
   // Questa variabile controlla se la password è visibile o nascosta
   bool _isPasswordVisible = false;
@@ -35,19 +35,62 @@ class _LoginPageState extends State<LoginPage> {
   // quando l'utente lascia questa schermata
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   // Funzione chiamata quando l'utente preme "Login"
-  void _handleLogin() {
-    // Per ora navighiamo subito alla homepage.
-    // In futuro qui ci andrà il controllo email/password
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const OnboardingScreen()),
-    );
+  Future<void> _handleLogin() async {
+    // Chiude la tastiera a schermo
+    FocusScope.of(context).unfocus();
+    
+    final username = _usernameController.text; 
+    final password = _passwordController.text;
+
+    // Nascondi eventuali snackbar precedenti prima di mostrarne una nuova
+    ScaffoldMessenger.of(context).clearSnackBars();
+
+    if (username.isEmpty || password.isEmpty) {
+      debugPrint('Rilevati campi vuoti. Mostro la SnackBar.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Username or password missing'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final statusCode = await impact.getAndStoreTokens(username, password);
+      debugPrint('Response status: $statusCode');
+
+      if (statusCode == 200) {
+        // Successo: naviga alla schermata successiva
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+        );
+      } else {
+        // Errore credenziali 
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Username or password incorrect'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Eccezione catturata durante l\'autenticazione: $e');
+      // In caso di eccezione di rete o connessione
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Errore di connessione: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -80,7 +123,7 @@ class _LoginPageState extends State<LoginPage> {
 
               // --- NOME APP ---
               const Text(
-                'move with pip',
+                'TwiC',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -92,7 +135,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 8),
 
               const Text(
-                'Bentornata!',
+                'Welcome!',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
@@ -104,12 +147,12 @@ class _LoginPageState extends State<LoginPage> {
               // --- CAMPO EMAIL ---
               // TextField è il widget di Flutter per i campi di testo
               TextField(
-                controller: _emailController, // collegato al controller
+                controller: _usernameController, // collegato al controller
                 keyboardType: TextInputType.emailAddress, // tastiera con la @
                 decoration: InputDecoration(
-                  labelText: 'Email',
+                  labelText: 'Username',
                   labelStyle: const TextStyle(color: Colors.grey),
-                  prefixIcon: const Icon(Icons.email_outlined, 
+                  prefixIcon: const Icon(Icons.person_outline_outlined, 
                     color: Colors.grey),
                   filled: true,
                   fillColor: Colors.white,
@@ -183,7 +226,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   child: const Text(
-                    'Accedi',
+                    'Log In',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                   ),
                 ),
