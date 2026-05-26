@@ -3,7 +3,7 @@ import 'login.dart';
 import 'package:google_fonts/google_fonts.dart'; // per cambiare il font
 
 class SplashLogoScreen extends StatefulWidget {
-  const SplashLogoScreen({Key? key}) : super(key: key);
+  const SplashLogoScreen({super.key});
 
   @override
   State<SplashLogoScreen> createState() => _SplashLogoScreenState();

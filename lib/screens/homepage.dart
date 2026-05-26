@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 // per ora serve solo per far funzionare il bottone login
 // la schermata vera verrà sviluppata dopo
 class HomePage extends StatelessWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFFDE7),
-      body: const Center(
+    return const Scaffold(
+      backgroundColor: Color(0xFFFFFDE7),
+      body: Center(
         child: Text(
           'Homepage 🐥',
           style: TextStyle(
