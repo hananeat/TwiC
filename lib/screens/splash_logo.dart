@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import 'login.dart';
+import 'homepage.dart';
+import 'onboarding_screen.dart';
 import 'package:google_fonts/google_fonts.dart'; // per cambiare il font
 
 class SplashLogoScreen extends StatefulWidget {
-  const SplashLogoScreen({super.key});
+  final bool hasAccess;
+  final bool hasChickName;
+
+  const SplashLogoScreen({
+    super.key,
+    required this.hasAccess,
+    required this.hasChickName,
+  });
 
   @override
   State<SplashLogoScreen> createState() => _SplashLogoScreenState();
@@ -98,12 +107,21 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
     setState(() => _showFinalTwiC = true);
     _finalController.forward();
 
-    // Aspetta e vai alla login
+    // Aspetta e vai alla destinazione corretta
     await Future.delayed(const Duration(milliseconds: 1200));
     if (mounted) {
+      Widget nextScreen;
+      if (widget.hasAccess && widget.hasChickName) {
+        nextScreen = const HomePage();
+      } else if (widget.hasAccess && !widget.hasChickName) {
+        nextScreen = const OnboardingScreen();
+      } else {
+        nextScreen = const LoginPage();
+      }
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
+        MaterialPageRoute(builder: (context) => nextScreen),
       );
     }
   }

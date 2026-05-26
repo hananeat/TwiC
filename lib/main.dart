@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'screens/login.dart';
-import 'screens/homepage.dart';
-import 'screens/onboarding_screen.dart';
+import 'screens/splash_logo.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,20 +29,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Decidiamo quale schermata iniziale mostrare
-    Widget initialScreen;
-    if (hasAccess && hasChickName) {
-      initialScreen = const HomePage();
-    } else if (hasAccess && !hasChickName) {
-      initialScreen = const OnboardingScreen();
-    } else {
-      initialScreen = const LoginPage();
-    }
-
     return MaterialApp(
       title: 'TwiC',
       debugShowCheckedModeBanner: false,
-      home: initialScreen,
+      home: SplashLogoScreen(
+        hasAccess: hasAccess,
+        hasChickName: hasChickName,
+      ),
     );
   } //build
 }//MyApp

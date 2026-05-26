@@ -135,11 +135,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 8),
 
               const Text(
-<<<<<<< HEAD
-                'Hello!',
-=======
                 'Welcome!',
->>>>>>> 7312bdfd93652732acf25ef57356e428539f537e
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
