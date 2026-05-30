@@ -21,7 +21,7 @@ class _HomePageState extends State<HomePage> {
   final List<Map<String, dynamic>> _goals = [
     {
       'label': 'Passi',
-      'color': Color(0xFF3DBF7A),
+      'color': const Color(0xFF3DBF7A),
       'progress': 0.60,
       'value': '5.8k',
       'points': '+7',
@@ -29,7 +29,7 @@ class _HomePageState extends State<HomePage> {
     },
     {
       'label': 'Sonno',
-      'color': Color(0xFF3BAEE8),
+      'color': const Color(0xFF3BAEE8),
       'progress': 0.72,
       'value': '7h12',
       'points': '+10',
@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
     },
     {
       'label': 'Mood',
-      'color': Color(0xFFE85C3B),
+      'color': const Color(0xFFE85C3B),
       'progress': 0.0,
       'value': '—',
       'points': '+5',
@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> {
     },
     {
       'label': 'Esercizio',
-      'color': Color(0xFF5D59B5),
+      'color': const Color(0xFF5D59B5),
       'progress': 0.50,
       'value': '1 sess.',
       'points': '+6',
@@ -57,7 +57,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFFFFDE7),
+      backgroundColor: const Color(0xFFFFFDE7),
       body: SafeArea(
         child: Column(
           children: [
@@ -108,9 +108,9 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
+        const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
               'Ciao, nome_utente!',
               style: TextStyle(
@@ -354,7 +354,7 @@ class _HomePageState extends State<HomePage> {
                 Icon(
                   navItems[index]['icon'] as IconData,
                   size: 24,
-                  color: isActive ? Color(0xFF5D59B5) : Colors.grey,
+                  color: isActive ? const Color(0xFF5D59B5) : Colors.grey,
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -363,7 +363,7 @@ class _HomePageState extends State<HomePage> {
                     fontSize: 11,
                     fontWeight:
                         isActive ? FontWeight.w600 : FontWeight.normal,
-                    color: isActive ? Color(0xFF5D59B5) : Colors.grey,
+                    color: isActive ? const Color(0xFF5D59B5) : Colors.grey,
                   ),
                 ),
               ],
