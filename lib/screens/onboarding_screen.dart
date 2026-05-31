@@ -144,8 +144,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
               _lottieController1.duration = composition.duration;
               
               // Puoi modificare questi valori tra 0.0 (inizio) e 1.0 (fine)
-              final double startPoint = 0.25; // Punto di partenza
-              final double endPoint = 0.43;  // Punto finale
+              const double startPoint = 0.25; // Punto di partenza
+              const double endPoint = 0.43;  // Punto finale
 
               //_lottieController1.value = startPoint;
               //_lottieController1.animateTo(endPoint); 
@@ -191,7 +191,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SpeechBalloon(
+          const SpeechBalloon(
             nipLocation: NipLocation.bottom,
             color: Colors.white,
             borderColor: primaryGreen,
@@ -199,7 +199,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
             borderRadius: 20,
             height: 63,
             width: 120,
-            child: const Padding(
+            child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Text(
                 "Hi! What's my name?",
@@ -220,8 +220,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
               _lottieController2.duration = composition.duration;
               
               // Puoi modificare questi valori tra 0.0 (inizio) e 1.0 (fine)
-              final double startPoint = 0.25; // Punto di partenza //0.43
-              final double endPoint = 0.6;  // Punto finale
+              const double startPoint = 0.25; // Punto di partenza //0.43
+              const double endPoint = 0.6;  // Punto finale
 
               // Se invece volessi farla ripetere in loop tra questi due punti, potresti usare:
                 _lottieController2.repeat(

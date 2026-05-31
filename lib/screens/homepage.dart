@@ -21,7 +21,7 @@ class _HomePageState extends State<HomePage> {
   final List<Map<String, dynamic>> _goals = [
     {
       'label': 'Passi',
-      'color': Color(0xFF3DBF7A),
+      'color': const Color(0xFF3DBF7A),
       'progress': 0.60,
       'value': '5.8k',
       'points': '+7',
@@ -29,7 +29,7 @@ class _HomePageState extends State<HomePage> {
     },
     {
       'label': 'Sonno',
-      'color': Color(0xFF3BAEE8),
+      'color': const Color(0xFF3BAEE8),
       'progress': 0.72,
       'value': '7h12',
       'points': '+10',
@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
     },
     {
       'label': 'Mood',
-      'color': Color(0xFFE85C3B),
+      'color': const Color(0xFFE85C3B),
       'progress': 0.0,
       'value': '—',
       'points': '+5',
@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> {
     },
     {
       'label': 'Esercizio',
-      'color': Color(0xFF5D59B5),
+      'color': const Color(0xFF5D59B5),
       'progress': 0.50,
       'value': '1 sess.',
       'points': '+6',
@@ -57,34 +57,105 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFFFFDE7),
-      body: SafeArea(
+      backgroundColor: const Color(0xFFFFFDE7),
+      body: _getPage(_selectedIndex),
+      bottomNavigationBar: NavigationBar(
+        backgroundColor: Colors.white,
+        indicatorColor: const Color(0xFF5D59B5).withOpacity(0.15),
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (int index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined, color: Colors.grey),
+            selectedIcon: Icon(Icons.home_rounded, color: Color(0xFF5D59B5)),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.favorite_border_rounded, color: Colors.grey),
+            selectedIcon: Icon(Icons.favorite_rounded, color: Color(0xFF5D59B5)),
+            label: 'Mood',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.bar_chart_rounded, color: Colors.grey),
+            selectedIcon: Icon(Icons.bar_chart_rounded, color: Color(0xFF5D59B5)),
+            label: 'Stats',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.shopping_bag_outlined, color: Colors.grey),
+            selectedIcon: Icon(Icons.shopping_bag_rounded, color: Color(0xFF5D59B5)),
+            label: 'Shop',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDashboardContent() {
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    _buildTopBar(),
-                    const SizedBox(height: 24),
-                    _buildChickSection(),
-                    const SizedBox(height: 20),
-                    _buildVitalityBar(),
-                    const SizedBox(height: 28),
-                    _buildGoalsSection(),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),  
-            ), 
-            _buildBottomNavBar(),
+            const SizedBox(height: 20),
+            _buildTopBar(),
+            const SizedBox(height: 24),
+            _buildChickSection(),
+            const SizedBox(height: 20),
+            _buildVitalityBar(),
+            const SizedBox(height: 28),
+            _buildGoalsSection(),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
+  }
+
+  Widget _getPage(int index) {
+    switch (index) {
+      case 0:
+        return _buildDashboardContent();
+      case 1:
+        return const Center(
+          child: Text(
+            'Mood Screen',
+            style: TextStyle(
+              fontSize: 24,
+              color: Color(0xFF2A2859),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        );
+      case 2:
+        return const Center(
+          child: Text(
+            'Stats Screen',
+            style: TextStyle(
+              fontSize: 24,
+              color: Color(0xFF2A2859),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        );
+      case 3:
+        return const Center(
+          child: Text(
+            'Shop Screen',
+            style: TextStyle(
+              fontSize: 24,
+              color: Color(0xFF2A2859),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        );
+      default:
+        return _buildDashboardContent();
+    }
   }
 
   //carico nome chick (faremo lo stesso con nome_utente)
@@ -108,9 +179,9 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
+        const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
               'Ciao, nome_utente!',
               style: TextStyle(
@@ -316,60 +387,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  //bottom navigation bar con 4 icone
-  Widget _buildBottomNavBar() {
-    final List<Map<String, dynamic>> navItems = [
-      {'icon': Icons.home_rounded, 'label': 'Home'},
-      {'icon': Icons.favorite_border_rounded, 'label': 'Mood'},
-      {'icon': Icons.bar_chart_rounded, 'label': 'Stats'},
-      {'icon': Icons.shopping_bag_outlined, 'label': 'Shop'},
-    ];
- 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.grey.withOpacity(0.15), width: 1),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(navItems.length, (index) {
-          final bool isActive = _selectedIndex == index;
-          return GestureDetector(
-            onTap: () {
-              setState(() => _selectedIndex = index);
-              //   navigare alla schermata corrispondente
-              //   index 0 → Home (già qui) , index 1 → MoodScreen
-              //   index 2 → StatsScreen , index 3 → ShopScreen
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  navItems[index]['icon'] as IconData,
-                  size: 24,
-                  color: isActive ? Color(0xFF5D59B5) : Colors.grey,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  navItems[index]['label'] as String,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight:
-                        isActive ? FontWeight.w600 : FontWeight.normal,
-                    color: isActive ? Color(0xFF5D59B5) : Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }),
       ),
     );
   }
