@@ -58,33 +58,104 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFFFDE7),
-      body: SafeArea(
+      body: _getPage(_selectedIndex),
+      bottomNavigationBar: NavigationBar(
+        backgroundColor: Colors.white,
+        indicatorColor: const Color(0xFF5D59B5).withOpacity(0.15),
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (int index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined, color: Colors.grey),
+            selectedIcon: Icon(Icons.home_rounded, color: Color(0xFF5D59B5)),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.favorite_border_rounded, color: Colors.grey),
+            selectedIcon: Icon(Icons.favorite_rounded, color: Color(0xFF5D59B5)),
+            label: 'Mood',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.bar_chart_rounded, color: Colors.grey),
+            selectedIcon: Icon(Icons.bar_chart_rounded, color: Color(0xFF5D59B5)),
+            label: 'Stats',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.shopping_bag_outlined, color: Colors.grey),
+            selectedIcon: Icon(Icons.shopping_bag_rounded, color: Color(0xFF5D59B5)),
+            label: 'Shop',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDashboardContent() {
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    _buildTopBar(),
-                    const SizedBox(height: 24),
-                    _buildChickSection(),
-                    const SizedBox(height: 20),
-                    _buildVitalityBar(),
-                    const SizedBox(height: 28),
-                    _buildGoalsSection(),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),  
-            ), 
-            _buildBottomNavBar(),
+            const SizedBox(height: 20),
+            _buildTopBar(),
+            const SizedBox(height: 24),
+            _buildChickSection(),
+            const SizedBox(height: 20),
+            _buildVitalityBar(),
+            const SizedBox(height: 28),
+            _buildGoalsSection(),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
+  }
+
+  Widget _getPage(int index) {
+    switch (index) {
+      case 0:
+        return _buildDashboardContent();
+      case 1:
+        return const Center(
+          child: Text(
+            'Mood Screen',
+            style: TextStyle(
+              fontSize: 24,
+              color: Color(0xFF2A2859),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        );
+      case 2:
+        return const Center(
+          child: Text(
+            'Stats Screen',
+            style: TextStyle(
+              fontSize: 24,
+              color: Color(0xFF2A2859),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        );
+      case 3:
+        return const Center(
+          child: Text(
+            'Shop Screen',
+            style: TextStyle(
+              fontSize: 24,
+              color: Color(0xFF2A2859),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        );
+      default:
+        return _buildDashboardContent();
+    }
   }
 
   //carico nome chick (faremo lo stesso con nome_utente)
@@ -316,60 +387,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  //bottom navigation bar con 4 icone
-  Widget _buildBottomNavBar() {
-    final List<Map<String, dynamic>> navItems = [
-      {'icon': Icons.home_rounded, 'label': 'Home'},
-      {'icon': Icons.favorite_border_rounded, 'label': 'Mood'},
-      {'icon': Icons.bar_chart_rounded, 'label': 'Stats'},
-      {'icon': Icons.shopping_bag_outlined, 'label': 'Shop'},
-    ];
- 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.grey.withOpacity(0.15), width: 1),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(navItems.length, (index) {
-          final bool isActive = _selectedIndex == index;
-          return GestureDetector(
-            onTap: () {
-              setState(() => _selectedIndex = index);
-              //   navigare alla schermata corrispondente
-              //   index 0 → Home (già qui) , index 1 → MoodScreen
-              //   index 2 → StatsScreen , index 3 → ShopScreen
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  navItems[index]['icon'] as IconData,
-                  size: 24,
-                  color: isActive ? const Color(0xFF5D59B5) : Colors.grey,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  navItems[index]['label'] as String,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight:
-                        isActive ? FontWeight.w600 : FontWeight.normal,
-                    color: isActive ? const Color(0xFF5D59B5) : Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }),
       ),
     );
   }
