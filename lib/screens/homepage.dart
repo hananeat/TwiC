@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'stats_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -344,6 +345,12 @@ class _HomePageState extends State<HomePage> {
           return GestureDetector(
             onTap: () {
               setState(() => _selectedIndex = index);
+              if (index == 2) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => StatsScreen()),
+                );
+              } 
               //   navigare alla schermata corrispondente
               //   index 0 → Home (già qui) , index 1 → MoodScreen
               //   index 2 → StatsScreen , index 3 → ShopScreen
