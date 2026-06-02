@@ -36,7 +36,6 @@ class _StatsScreenState extends State<StatsScreen> {
                 ),
               ),
             ),
-            _buildBottomNavBar(),
           ],
         ),
       ),
@@ -198,62 +197,6 @@ class _StatsScreenState extends State<StatsScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-//bottom navigation bar con 4 icone, quella di stats è attiva
-  Widget _buildBottomNavBar() {
-    final List<Map<String, dynamic>> navItems = [
-      {'icon': Icons.home_rounded, 'label': 'Home'},
-      {'icon': Icons.favorite_border_rounded, 'label': 'Mood'},
-      {'icon': Icons.bar_chart_rounded, 'label': 'Stats'},
-      {'icon': Icons.shopping_bag_outlined, 'label': 'Shop'},
-    ];
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Colors.grey.withOpacity(0.15), width: 1),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(navItems.length, (index) {
-          final bool isActive = _selectedIndex == index;
-          return GestureDetector(
-            onTap: () {
-              if (index == 0) Navigator.pop(context); // torna alla Home
-            },
-
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  navItems[index]['icon'] as IconData,
-                    size: 24,
-                    color: isActive
-                        ? const Color(0xFF5D59B5) : Colors.grey
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  navItems[index]['label'] as String,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: 
-                        isActive ? FontWeight.w600
-                        : FontWeight.normal,
-                    color: isActive
-                        ? const Color(0xFF5D59B5)
-                        : Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }),
       ),
     );
   }
