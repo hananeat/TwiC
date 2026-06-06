@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:TwiC/utils/impact.dart';
 import 'login.dart';
 import 'homepage.dart';
 import 'onboarding_screen.dart';
 import 'package:google_fonts/google_fonts.dart'; // per cambiare il font
 
 class SplashLogoScreen extends StatefulWidget {
-  final bool hasAccess;
-  final bool hasChickName;
-
-  const SplashLogoScreen({
-    super.key,
-    required this.hasAccess,
-    required this.hasChickName,
-  });
+  const SplashLogoScreen({super.key});
 
   @override
   State<SplashLogoScreen> createState() => _SplashLogoScreenState();
@@ -110,14 +105,27 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
     // Aspetta e vai alla destinazione corretta
     await Future.delayed(const Duration(milliseconds: 1200));
     if (mounted) {
+      final sp = await SharedPreferences.getInstance();
+      
+      // Controlliamo se i token sono validi effettuando un refresh
+      final impact = Impact();
+      final refreshResult = await impact.refreshTokens();
+      final hasAccess = refreshResult == 200;
+      
+      // Controlliamo se l'onboarding è completato (nome del pulcino presente)
+      final chickName = sp.getString('chickName');
+      final hasChickName = chickName != null && chickName.isNotEmpty;
+
       Widget nextScreen;
-      if (widget.hasAccess && widget.hasChickName) {
+      if (hasAccess && hasChickName) {
         nextScreen = const HomePage();
-      } else if (widget.hasAccess && !widget.hasChickName) {
+      } else if (hasAccess && !hasChickName) {
         nextScreen = const OnboardingScreen();
       } else {
         nextScreen = const LoginPage();
       }
+
+      if (!mounted) return;
 
       Navigator.pushReplacement(
         context,
