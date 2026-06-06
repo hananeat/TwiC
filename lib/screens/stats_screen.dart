@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class StatsScreen extends StatefulWidget {
-  const StatsScreen({super.key});
+  final Function(int)? onTabSelected;
+
+  const StatsScreen({super.key, this.onTabSelected});
 
   @override
   State<StatsScreen> createState() => _StatsScreenState();
@@ -69,10 +71,10 @@ class _StatsScreenState extends State<StatsScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  _buildTopTabButton('Home / Pet', false),
-                  _buildTopTabButton('Mood check-in', false),
-                  _buildTopTabButton('Statistiche', true),
-                  _buildTopTabButton('Shop', false),
+                  _buildTopTabButton('Home / Pet', false, 0),
+                  _buildTopTabButton('Mood check-in', false, 1),
+                  _buildTopTabButton('Statistiche', true, 2),
+                  _buildTopTabButton('Shop', false, 3),
                 ],
               ),
             ),
@@ -188,24 +190,31 @@ class _StatsScreenState extends State<StatsScreen> {
     );
   }
 
-  Widget _buildTopTabButton(String label, bool isActive) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isActive ? const Color(0xFFFFD158) : Colors.black12,
-          width: isActive ? 2 : 1,
+  Widget _buildTopTabButton(String label, bool isActive, int targetIndex) {
+    return GestureDetector(
+      onTap: () {
+        if (!isActive && widget.onTabSelected != null) {
+          widget.onTabSelected!(targetIndex);
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isActive ? const Color(0xFFFFD158) : Colors.black12,
+            width: isActive ? 2 : 1,
+          ),
         ),
-      ),
-      child: Text(
-        label,
-        style: GoogleFonts.poppins(
-          fontSize: 13,
-          fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-          color: isActive ? const Color(0xFF2A2859) : Colors.black54,
+        child: Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+            color: isActive ? const Color(0xFF2A2859) : Colors.black54,
+          ),
         ),
       ),
     );

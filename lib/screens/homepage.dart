@@ -133,7 +133,13 @@ class _HomePageState extends State<HomePage> {
           ),
         );
       case 2:
-        return const StatsScreen();
+        return StatsScreen(
+          onTabSelected: (index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+        );
       case 3:
         return const Center(
           child: Text(
