@@ -1,38 +1,186 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class StatsScreen extends StatefulWidget {
-  const StatsScreen({super.key});
+  final Function(int)? onTabSelected;
+
+  const StatsScreen({super.key, this.onTabSelected});
 
   @override
   State<StatsScreen> createState() => _StatsScreenState();
 }
 
-//gestire la navigazione verso homepage ecc
 class _StatsScreenState extends State<StatsScreen> {
-  int _selectedIndex = 2; // Stats attivo
-  String _tab = 'week';
+  String _subTab = 'Settimana'; // 'Settimana', 'Mese', 'Trend'
+
+  Map<String, String> getMetrics() {
+    switch (_subTab) {
+      case 'Mese':
+        return {
+          'title': 'QUESTO MESE',
+          'passi': '6.850',
+          'sonno': '7h 10m',
+          'mood': '3.5 / 5',
+          'monete': '+512',
+          'corrTitle': 'Correlazione mensile',
+          'corrSub': 'Con una media passi di 7k+, la frequenza cardiaca a riposo si è ridotta di 3 bpm.',
+          'freqTitle': 'Frequenza cardiaca a riposo',
+          'freqSub': '63 bpm questo mese — stabile rispetto al mese scorso.',
+        };
+      case 'Trend':
+        return {
+          'title': 'TREND GENERALI',
+          'passi': '+8% / mese',
+          'sonno': '+15m / mese',
+          'mood': '+0.3 / mese',
+          'monete': '+1.240 tot',
+          'corrTitle': 'Andamento positivo',
+          'corrSub': 'Il tuo sonno è migliorato del 5% grazie a orari di riposo più regolari.',
+          'freqTitle': 'Frequenza cardiaca',
+          'freqSub': 'Mostra una tendenza alla riduzione nelle ultime 8 settimane.',
+        };
+      case 'Settimana':
+      default:
+        return {
+          'title': 'QUESTA SETTIMANA',
+          'passi': '6.240',
+          'sonno': '6h 55m',
+          'mood': '3.2 / 5',
+          'monete': '+128',
+          'corrTitle': 'Correlazione rilevata',
+          'corrSub': 'Nei giorni con 7h+ di sonno il tuo umore era in media 0.8 punti più alto.',
+          'freqTitle': 'Frequenza cardiaca a riposo',
+          'freqSub': '62 bpm questa settimana — in calo rispetto alle 65 bpm di 4 settimane fa.',
+        };
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final metrics = getMetrics();
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFFDE7),
       body: SafeArea(
         child: Column(
           children: [
+            const SizedBox(height: 16),
+            // Top Tabs Bar
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  _buildTopTabButton('Home / Pet', false, 0),
+                  _buildTopTabButton('Mood check-in', false, 1),
+                  _buildTopTabButton('Statistiche', true, 2),
+                  _buildTopTabButton('Shop', false, 3),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // White Container (Device View)
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    _buildHeader(),
-                    const SizedBox(height: 20),
-                    _buildTabSwitcher(),
-                    const SizedBox(height: 24),
-                    _buildStatsGrid(),
-                    const SizedBox(height: 20),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: Offset(0, -2),
+                    ),
                   ],
+                ),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
+                  ),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Status Bar Row
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '9:41',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const Icon(
+                              Icons.more_horiz_rounded,
+                              color: Colors.black,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        // Sub-Tabs Row
+                        Row(
+                          children: [
+                            _buildSubTabButton('Settimana'),
+                            _buildSubTabButton('Mese'),
+                            _buildSubTabButton('Trend'),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        // Section Title
+                        Text(
+                          metrics['title']!,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // Grid 2x2
+                        Row(
+                          children: [
+                            _buildMetricCard('Media passi', metrics['passi']!),
+                            const SizedBox(width: 12),
+                            _buildMetricCard('Media sonno', metrics['sonno']!),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            _buildMetricCard('Mood medio', metrics['mood']!),
+                            const SizedBox(width: 12),
+                            _buildMetricCard('Monete guadagnate', metrics['monete']!),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        // Correlazione Card
+                        _buildInfoCard(
+                          metrics['corrTitle']!,
+                          metrics['corrSub']!,
+                          const Color(0xFFF2EFFF),
+                          const Color(0xFF5D59B5),
+                        ),
+                        const SizedBox(height: 12),
+                        // Frequenza cardiaca Card
+                        _buildInfoCard(
+                          metrics['freqTitle']!,
+                          metrics['freqSub']!,
+                          const Color(0xFFE8F6F1),
+                          const Color(0xFF0A7C5F),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -42,158 +190,119 @@ class _StatsScreenState extends State<StatsScreen> {
     );
   }
 
-  //titolo e sottotitolo
-  Widget _buildHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'YOUR STATISTICS',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1.2,
-            color: Color(0xFF4CAF50),
+  Widget _buildTopTabButton(String label, bool isActive, int targetIndex) {
+    return GestureDetector(
+      onTap: () {
+        if (!isActive && widget.onTabSelected != null) {
+          widget.onTabSelected!(targetIndex);
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isActive ? const Color(0xFFFFD158) : Colors.black12,
+            width: isActive ? 2 : 1,
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          _tab == 'week' ? 'This week' : 'This month',
-          style: const TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF2A2859),
+        child: Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+            color: isActive ? const Color(0xFF2A2859) : Colors.black54,
           ),
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildTabSwitcher() {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFD158),
-        borderRadius: BorderRadius.circular(14),
+  Widget _buildSubTabButton(String label) {
+    final bool isActive = _subTab == label;
+    return GestureDetector(
+      onTap: () => setState(() => _subTab = label),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFFEDEAFE) : const Color(0xFFF7F6F2),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
+            color: isActive ? const Color(0xFF5D59B5) : Colors.black45,
+          ),
+        ),
       ),
-      child: Row(
-        children: ['week', 'month'].map((t) {
-          final bool active = _tab == t;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => _tab = t),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 9),
-                decoration: BoxDecoration(
-                  color: active ? Colors.white : Colors.transparent,
-                  borderRadius: BorderRadius.circular(11),
-                  boxShadow: active
-                      ? [BoxShadow(color: Colors.black12, blurRadius: 4)]
-                      : [],
-                ),
-                child: Text(
-                  t[0].toUpperCase() + t.substring(1),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: active
-                        ? const Color(0xFF2A2859)
-                        : const Color(0xFF7A6800),
-                  ),
-                ),
+    );
+  }
+
+  Widget _buildMetricCard(String label, String value) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF7F6F2),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.black54,
               ),
             ),
-          );
-        }).toList(),
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF2A2859),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-  //griglia con 4 statistiche 
-  Widget _buildStatsGrid() {
-    final bool isWeek = _tab == 'week';
-    final items = [
-      {
-        'label': 'mean steps',
-        'value': isWeek ? '' : '',
-        'icon': Icons.directions_walk_rounded,
-        'accent': const Color(0xFFE8F5E9),
-        'iconColor': const Color(0xFF4CAF50),
-      },
-      {
-        'label': 'mean sleep',
-        'value': isWeek ? '' : '',
-        'icon': Icons.bedtime_rounded,
-        'accent': const Color(0xFFFFF9C4),
-        'iconColor': const Color(0xFFF9A825),
-      },
-      {
-        'label': 'mean mood',
-        'value': isWeek ? '' : '',
-        'icon': Icons.sentiment_satisfied_rounded,
-        'accent': const Color(0xFFFFF3CD),
-        'iconColor': const Color(0xFFFFD158),
-      },
-      {
-        'label': 'Coins earned',
-        'value': isWeek ? '' : '',
-        'icon': Icons.star_rounded,
-        'accent': const Color(0xFFEDE7F6),
-        'iconColor': const Color(0xFF2A2859),
-      },
-    ];
 
-    //calcolare dinamicamente
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisSpacing: 14,
-      mainAxisSpacing: 14,
-      childAspectRatio: 1.1,
-      children: items.map((item) => _buildStatCard(item)).toList(),
-    );
-  }
-
-  Widget _buildStatCard(Map<String, dynamic> item) {
+  Widget _buildInfoCard(String title, String subtitle, Color bg, Color textColor) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 6),
-        ],
+        color: bg,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: item['accent'] as Color,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(item['icon'] as IconData,
-                color: item['iconColor'] as Color, size: 20),
-          ),
-          const Spacer(),
           Text(
-            item['label'] as String,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF4CAF50),
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: textColor,
             ),
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: 4),
           Text(
-            item['value'] as String,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF2A2859),
+            subtitle,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: textColor.withOpacity(0.85),
             ),
           ),
         ],
@@ -201,4 +310,5 @@ class _StatsScreenState extends State<StatsScreen> {
     );
   }
 }
-  
+
+// ovviamente sono dati fittizzi che poi verranno sostituiti con quelli reali
