@@ -135,7 +135,7 @@ class _StatsScreenState extends State<StatsScreen> {
         'iconColor': const Color(0xFFFFD158),
       },
       {
-        'label': 'Monete',
+        'label': 'Coins earned',
         'value': isWeek ? '' : '',
         'icon': Icons.star_rounded,
         'accent': const Color(0xFFEDE7F6),
