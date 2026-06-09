@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class StatsScreen extends StatefulWidget {
-  final Function(int)? onTabSelected;
-
-  const StatsScreen({super.key, this.onTabSelected});
+  const StatsScreen({super.key});
 
   @override
   State<StatsScreen> createState() => _StatsScreenState();
@@ -65,20 +63,6 @@ class _StatsScreenState extends State<StatsScreen> {
         child: Column(
           children: [
             const SizedBox(height: 16),
-            // Top Tabs Bar
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  _buildTopTabButton('Home / Pet', false, 0),
-                  _buildTopTabButton('Mood check-in', false, 1),
-                  _buildTopTabButton('Statistiche', true, 2),
-                  _buildTopTabButton('Shop', false, 3),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
             // White Container (Device View)
             Expanded(
               child: Container(
@@ -107,25 +91,6 @@ class _StatsScreenState extends State<StatsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Status Bar Row
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '9:41',
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: Colors.black,
-                              ),
-                            ),
-                            const Icon(
-                              Icons.more_horiz_rounded,
-                              color: Colors.black,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
                         // Sub-Tabs Row
                         Row(
                           children: [
@@ -185,36 +150,6 @@ class _StatsScreenState extends State<StatsScreen> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTopTabButton(String label, bool isActive, int targetIndex) {
-    return GestureDetector(
-      onTap: () {
-        if (!isActive && widget.onTabSelected != null) {
-          widget.onTabSelected!(targetIndex);
-        }
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isActive ? const Color(0xFFFFD158) : Colors.black12,
-            width: isActive ? 2 : 1,
-          ),
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-            color: isActive ? const Color(0xFF2A2859) : Colors.black54,
-          ),
         ),
       ),
     );
