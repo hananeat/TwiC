@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
@@ -19,7 +20,7 @@ class Impact{
       final body = {'refresh': refresh};
 
       //Get the response
-      print('Calling: $url');
+      debugPrint('Calling: $url');
       final response = await http.post(Uri.parse(url), body: body);
 
       //If the response is OK, set the tokens in SharedPreferences to the new values
@@ -43,7 +44,7 @@ class Impact{
     final body = {'username': username, 'password': password};
 
     //Get the response
-    print('Calling: $url');
+    debugPrint('Calling: $url');
     final response = await http.post(Uri.parse(url), body: body);
 
     //If response is OK, decode it and store the tokens. Otherwise do nothing.

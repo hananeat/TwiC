@@ -9,7 +9,6 @@ class StatsScreen extends StatefulWidget {
 
 //gestire la navigazione verso homepage ecc
 class _StatsScreenState extends State<StatsScreen> {
-  int _selectedIndex = 2; // Stats attivo
   String _tab = 'week';
 
   @override
@@ -47,7 +46,7 @@ class _StatsScreenState extends State<StatsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'YOUR STATISTICS',
           style: TextStyle(
             fontSize: 12,
@@ -88,7 +87,7 @@ class _StatsScreenState extends State<StatsScreen> {
                   color: active ? Colors.white : Colors.transparent,
                   borderRadius: BorderRadius.circular(11),
                   boxShadow: active
-                      ? [BoxShadow(color: Colors.black12, blurRadius: 4)]
+                      ? [const BoxShadow(color: Colors.black12, blurRadius: 4)]
                       : [],
                 ),
                 child: Text(
@@ -162,7 +161,7 @@ class _StatsScreenState extends State<StatsScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 6),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 6),
         ],
       ),
       child: Column(

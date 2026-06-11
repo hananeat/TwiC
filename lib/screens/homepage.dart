@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import '../providers/user_provider.dart';
 import 'stats_screen.dart';
+import 'mood_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,56 +16,28 @@ class _HomePageState extends State<HomePage> {
   //bottom bar navigation
   int _selectedIndex = 0;
   //dati generali (saranno caricati dinamicamente in futuro)
-  String _chickName = '';
   final int _vitality = 68;
   final int _vitalityMax = 100;
-  final int _stars = 47;
 
-  //dati obbiettivi giornalieri (saranno caricati dinamicamente in futuro)
-  final List<Map<String, dynamic>> _goals = [
-    {
-      'label': 'Passi',
-      'color': const Color(0xFF3DBF7A),
-      'progress': 0.60,
-      'value': '5.8k',
-      'points': '+7',
-      'done': true,
-    },
-    {
-      'label': 'Sonno',
-      'color': const Color(0xFF3BAEE8),
-      'progress': 0.72,
-      'value': '7h12',
-      'points': '+10',
-      'done': true,
-    },
-    {
-      'label': 'Mood',
-      'color': const Color(0xFFE85C3B),
-      'progress': 0.0,
-      'value': '—',
-      'points': '+5',
-      'done': false,
-    },
-    {
-      'label': 'Esercizio',
-      'color': const Color(0xFF5D59B5),
-      'progress': 0.50,
-      'value': '1 sess.',
-      'points': '+6',
-      'done': true,
-    },
-  ];
+  DateTime _selectedDate = DateTime.now();
+
+  //dati obbiettivi giornalieri (caricati dinamicamente)
+  late List<Map<String, dynamic>> _goals;
 
   //logica della homepage
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+
+    // Update goals dynamically from provider/selected date
+    _updateGoalsForDate(_selectedDate, userProvider.moodDone);
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFFDE7),
       body: _getPage(_selectedIndex),
       bottomNavigationBar: NavigationBar(
         backgroundColor: Colors.white,
-        indicatorColor: const Color(0xFF5D59B5).withOpacity(0.15),
+        indicatorColor: const Color(0xFF5D59B5).withValues(alpha: 0.15),
         selectedIndex: _selectedIndex,
         onDestinationSelected: (int index) {
           setState(() {
@@ -95,6 +70,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+// The structure of the dashboard content, separated for clarity and maintainability
   Widget _buildDashboardContent() {
     return SafeArea(
       child: SingleChildScrollView(
@@ -104,6 +80,8 @@ class _HomePageState extends State<HomePage> {
           children: [
             const SizedBox(height: 20),
             _buildTopBar(),
+            const SizedBox(height: 24),
+            _buildDateNavigator(),
             const SizedBox(height: 24),
             _buildChickSection(),
             const SizedBox(height: 20),
@@ -117,21 +95,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+// The _getPage method determines which screen to display based on the selected navigation index.
   Widget _getPage(int index) {
     switch (index) {
       case 0:
         return _buildDashboardContent();
       case 1:
-        return const Center(
-          child: Text(
-            'Mood Screen',
-            style: TextStyle(
-              fontSize: 24,
-              color: Color(0xFF2A2859),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        );
+        return const MoodScreen();
       case 2:
         return const StatsScreen();
       case 3:
@@ -150,39 +120,176 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  //carico nome chick (faremo lo stesso con nome_utente)
+  // The initState method is called when the widget is created.
+  // It is used to initialize the _goals list with the default goals.
   @override
   void initState() {
     super.initState();
-    _loadChickName();
+    _initGoals();
   }
 
-  Future<void> _loadChickName() async {
-  final sp = await SharedPreferences.getInstance();
-  final name = sp.getString('chickName');
-  if (name != null && name.isNotEmpty && mounted) {
-    setState(() => _chickName = name);
-    }
+  void _initGoals() {
+    _goals = [
+      {
+        'label': 'Steps',
+        'color': const Color(0xFF3DBF7A),
+        'progress': 0.60,
+        'value': '5.8k',
+        'points': '+7',
+        'done': true,
+      },
+      {
+        'label': 'Sleep',
+        'color': const Color(0xFF3BAEE8),
+        'progress': 0.72,
+        'value': '7h12',
+        'points': '+10',
+        'done': true,
+      },
+      {
+        'label': 'Mood',
+        'color': const Color(0xFFE85C3B),
+        'progress': 0.0,
+        'value': '—',
+        'points': '+5',
+        'done': false,
+      },
+      {
+        'label': 'Exercise',
+        'color': const Color(0xFF5D59B5),
+        'progress': 0.50,
+        'value': '1 sess.',
+        'points': '+6',
+        'done': true,
+      },
+    ];
   }
 
-  //top bar con saluto e monetine
+// The _updateGoalsForDate method updates the _goals list with the goals for the selected date.
+// It takes the selected date and the moodDoneToday boolean as parameters.
+  void _updateGoalsForDate(DateTime date, bool moodDoneToday) {
+    _goals = [
+      {
+        'label': 'Steps',
+        'color': const Color(0xFF3DBF7A),
+        'progress': 0.60,
+        'value': '5.8k',
+        'points': '+7',
+        'done': true,
+      },
+      {
+        'label': 'Sleep',
+        'color': const Color(0xFF3BAEE8),
+        'progress': 0.72,
+        'value': '7h12',
+        'points': '+10',
+        'done': true,
+      },
+      {
+        'label': 'Mood',
+        'color': const Color(0xFFE85C3B),
+        'progress': moodDoneToday ? 1.0 : 0.0,
+        'value': moodDoneToday ? 'Done' : '—',
+        'points': '+5',
+        'done': moodDoneToday,
+      },
+      {
+        'label': 'Exercise',
+        'color': const Color(0xFF5D59B5),
+        'progress': 0.50,
+        'value': '1 sess.',
+        'points': '+6',
+        'done': true,
+      },
+    ];
+  }
+
+// METHODS FOR BUILDING THE DASHBOARD CONTENT
+// Method 1: The _buildDateNavigator method builds the date navigator.  
+  Widget _buildDateNavigator() {
+    final formattedDate = DateFormat('E, d MMM yyyy').format(_selectedDate);
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedDate = _selectedDate.subtract(const Duration(days: 1));
+            });
+          },
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFF5D59B5).withValues(alpha: 0.15),
+                width: 1.5,
+              ),
+              color: Colors.white,
+            ),
+            child: const Icon(
+              Icons.chevron_left_rounded,
+              color: Color(0xFF5D59B5),
+            ),
+          ),
+        ),
+        Text(
+          formattedDate,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2A2859),
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedDate = _selectedDate.add(const Duration(days: 1));
+            });
+          },
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFF5D59B5).withValues(alpha: 0.15),
+                width: 1.5,
+              ),
+              color: Colors.white,
+            ),
+            child: const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xFF5D59B5),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  //Method 2: The _buildTopBar method builds the top bar of the dashboard.
+  //It takes the userProvider as a parameter to get the first name of the user.
   Widget _buildTopBar() {
+    final userProvider = Provider.of<UserProvider>(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Ciao, nome_utente!',
-              style: TextStyle(
+              'Hi, ${userProvider.firstName}!',
+              style: const TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
               ),
             ),
-            SizedBox(height: 4),
-            Text(
+            const SizedBox(height: 4),
+            const Text(
               'How do you feel today?',
               style: TextStyle(
                 fontSize: 20,
@@ -193,7 +300,7 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
 
-        //monetine (icona + numero da inserire dinamicamente) 
+        // The Container is used to display the number of stars.
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
@@ -208,7 +315,7 @@ class _HomePageState extends State<HomePage> {
                   color: Color(0xFFE8A800), size: 18),
               const SizedBox(width: 6),
               Text(
-                '$_stars',
+                '${userProvider.stars}',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -221,9 +328,10 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
-  
-  //sezione con immagine chick (da caricare dinamicamente) e nome
+
+  //Method 3: The _buildChickSection method builds the chick section.  
   Widget _buildChickSection() {
+    final userProvider = Provider.of<UserProvider>(context);
     return Center(
       child: Column(
         children: [
@@ -234,7 +342,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 12),
           Text(
-            _chickName,
+            userProvider.chickName,
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -246,7 +354,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-   //barra vitality (barra di progresso con percentuale)
+  //Method 4: The _buildVitalityBar method builds the vitality bar.
+  //It takes the _vitality and _vitalityMax parameters to display the vitality progress.
   Widget _buildVitalityBar() {
     final double progress = _vitality / _vitalityMax;
 
@@ -257,7 +366,7 @@ class _HomePageState extends State<HomePage> {
           child: LinearProgressIndicator(
             value: progress,
             minHeight: 12,
-            backgroundColor: Colors.grey.withOpacity(0.3),
+            backgroundColor: Colors.grey.withValues(alpha: 0.15),
             valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF5D59B5)),
           ),
         ),
@@ -274,7 +383,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-//Sezione obbiettivi giornalieri 
+//Method 5: The _buildGoalsSection method builds the goals section.
   Widget _buildGoalsSection() {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,7 +404,8 @@ class _HomePageState extends State<HomePage> {
       );
   }
 
-  //singolo obbiettivo giornaliero
+  //Method 6: The _buildGoalRow method builds a single goal row.
+  //It takes the goal map as a parameter to display the goal progress.
   Widget _buildGoalRow(Map<String, dynamic> goal) {
     final Color color = goal['color'] as Color;
     final bool done = goal['done'] as bool;
@@ -334,9 +444,9 @@ class _HomePageState extends State<HomePage> {
               child: LinearProgressIndicator(
                 value: goal['progress'] as double,
                 minHeight: 6,
-                backgroundColor: Colors.grey.withOpacity(0.15),
+                backgroundColor: Colors.grey.withValues(alpha: 0.15),
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  done ? color : Colors.grey.withOpacity(0.3),
+                  done ? color : Colors.grey.withValues(alpha: 0.3),
                 ),
               ),
             ),
@@ -364,7 +474,7 @@ class _HomePageState extends State<HomePage> {
             decoration: BoxDecoration(
               color: done
                   ? const Color(0xFFFFF3D4)
-                  : Colors.grey.withOpacity(0.1),
+                  : Colors.grey.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -374,7 +484,7 @@ class _HomePageState extends State<HomePage> {
                 fontWeight: FontWeight.w600,
                 color: done
                     ? const Color(0xFF8A6200)
-                    : Colors.grey.withOpacity(0.5),
+                    : Colors.grey.withValues(alpha: 0.5),
               ),
             ),
           ),

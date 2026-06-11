@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:TwiC/utils/impact.dart';
 import 'onboarding_screen.dart';
-// Import di lottie che abbiamo usato per l'animazione del pulcino. 
 import 'package:lottie/lottie.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 // StatefulWidget perché la pagina deve "reagire" 
 // quando l'utente scrive nei campi o preme il bottone
@@ -26,7 +26,6 @@ class _LoginPageState extends State<LoginPage> {
   bool _isPasswordVisible = false;
 
   // I colori principali della nostra login page
-  static const Color primaryYellow = Color(0xFFFFD158); // giallo
   static const Color primaryGreen = Color(0xFF4CAF50);  // verde
   static const Color bgColor = Color(0xFFFFFDE7);       // sfondo giallo chiarissimo
   static const Color textDark = Color(0xFF2A2859);      // testo scuro
@@ -65,6 +64,8 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final statusCode = await impact.getAndStoreTokens(username, password);
       debugPrint('Response status: $statusCode');
+
+      if (!mounted) return;
 
       if (statusCode == 200) {
         // Successo: naviga alla schermata successiva
@@ -108,41 +109,64 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
 
-              const SizedBox(height: 60),
+              const SizedBox(height: 40),
 
-              // --- LOGO / PULCINO ---
-              // Usiamo la stessa animazione lottie della splash screen
-              // width e height più piccoli perché è solo un logo
-              Lottie.asset(
-                  'assets/hatching_chick.json',
-                width: 100,
-                height: 100,
+              // --- ROW HEADER ---
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        RichText(
+                          text: TextSpan(
+                            style: GoogleFonts.poppins(
+                              fontSize: 34,
+                              fontWeight: FontWeight.bold,
+                              color: primaryGreen,
+                              height: 1.25,
+                            ),
+                            children: const [
+                              TextSpan(text: 'Move'),
+                              TextSpan(
+                                text: ' your\nbody,\n',
+                                style: TextStyle(color: textDark),
+                              ),
+                              TextSpan(text: 'calm ', 
+                                style: TextStyle(color: primaryGreen),
+                                ),
+                              TextSpan(text: 'your\nmind.', 
+                                style: TextStyle(color: textDark),
+                                ), 
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Take care of yourself\nand your chick!',
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            color: Colors.grey[600],
+                            height: 1.4,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Animazione pulcino
+                  Lottie.asset(
+                    'assets/baby-chick.json',
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.contain,
+                  ),
+                ],
               ),
 
-              const SizedBox(height: 16),
-
-              // --- NOME APP ---
-              const Text(
-                'TwiC',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: textDark,
-                  fontFamily: 'serif',
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              const Text(
-                'Welcome!',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
-              ),
-
-              const SizedBox(height: 48),
+              const SizedBox(height: 36),
 
               // --- CAMPO EMAIL ---
               // TextField è il widget di Flutter per i campi di testo
@@ -234,6 +258,7 @@ class _LoginPageState extends State<LoginPage> {
 
               const SizedBox(height: 24),
 
+              /*
               // --- TESTO SOTTO IL BOTTONE ---
               // Per ora è solo estetico, in futuro può
               // portare a una schermata di registrazione
@@ -244,7 +269,6 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(color: Colors.grey)),
                   GestureDetector(
                     onTap: () {
-                      // TODO: navigare alla schermata di registrazione
                     },
                     child: const Text(
                       'Registrati',
@@ -256,8 +280,10 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ],
               ),
+              
 
               const SizedBox(height: 40),
+              */
             ],
           ),
         ),
