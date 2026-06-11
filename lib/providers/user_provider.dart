@@ -18,6 +18,7 @@ class UserProvider extends ChangeNotifier {
   bool _isLoading = true;
   bool _isDataLoaded = false; // Flag to prevent async race conditions
 
+  // Getters for the user data: these allow other parts of the app to access the user data without directly modifying it
   String get chickName => _chickName;
   String get firstName => _firstName;
   String get lastName => _lastName;
