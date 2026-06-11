@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 import 'stats_screen.dart';
 import 'mood_screen.dart';
+import 'package:TwiC/utils/app_colors.dart';
+import 'stats_screen.dart';
+import 'shop.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -105,16 +108,7 @@ class _HomePageState extends State<HomePage> {
       case 2:
         return const StatsScreen();
       case 3:
-        return const Center(
-          child: Text(
-            'Shop Screen',
-            style: TextStyle(
-              fontSize: 24,
-              color: Color(0xFF2A2859),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        );
+        return const ShopScreen();
       default:
         return _buildDashboardContent();
     }
@@ -304,22 +298,20 @@ class _HomePageState extends State<HomePage> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFF3D4),
+            color: AppColors.yellow.withOpacity(0.15),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFE8C96B), width: 1),
+            border: Border.all(color: AppColors.yellow),
           ),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.star_rounded,
-                  color: Color(0xFFE8A800), size: 18),
-              const SizedBox(width: 6),
+              const Text('⭐', style: TextStyle(fontSize: 15)),
+              const SizedBox(width: 4),
               Text(
                 '${userProvider.stars}',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF8A6200),
+                  color: AppColors.textDark,
                 ),
               ),
             ],
