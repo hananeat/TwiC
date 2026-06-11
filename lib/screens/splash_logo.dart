@@ -30,8 +30,6 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
   late Animation<double> _iAnim;
   late Animation<double> _cAnim;
 
-  // Controlla la sparizione delle parole
-  late Animation<double> _wordsHide;
   // Controlla l'apparizione di TwiC grande
   late Animation<double> _twicShow;
   // Controlla la dimensione di TwiC (cresce)
@@ -44,7 +42,6 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
 
   // Cambia i colori
   static const Color primaryYellow = Color(0xFFFFD158);
-  static const Color primaryGreen = Color(0xFF4CAF50);
   static const Color bgColor = Color(0xFFFFFDE7);
 
   @override
@@ -67,9 +64,6 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
     _wAnim = Tween<double>(begin: 0, end: 1).animate(_wController);
     _iAnim = Tween<double>(begin: 0, end: 1).animate(_iController);
     _cAnim = Tween<double>(begin: 0, end: 1).animate(_cController);
-
-    // Le parole spariscono (da 1 a 0)
-    _wordsHide = Tween<double>(begin: 1, end: 0).animate(_finalController);
 
     // TwiC appare (da 0 a 1)
     _twicShow = Tween<double>(begin: 0, end: 1).animate(_finalController);

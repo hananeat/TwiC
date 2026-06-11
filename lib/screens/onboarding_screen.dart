@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:speech_balloon/speech_balloon.dart';
 import 'package:lottie/lottie.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../providers/user_provider.dart';
 import 'homepage.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -20,7 +21,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
 
   // Controller for the name text field
   final TextEditingController _nameController = TextEditingController();
-  String _chickName = 'Pip'; // default name
+  String _chickName = ''; // start with empty name
+
+  // Controllers for the fourth page (profile setup)
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
+  String _selectedSex = 'Female';
 
   late final AnimationController _lottieController1;
   late final AnimationController _lottieController2;
@@ -30,11 +37,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     super.initState();
     _lottieController1 = AnimationController(vsync: this);
     _lottieController2 = AnimationController(vsync: this);
+
+    // Listeners to update the active state of the button on Page 4
+    _firstNameController.addListener(_onFormInputChanged);
+    _lastNameController.addListener(_onFormInputChanged);
+    _ageController.addListener(_onFormInputChanged);
+  }
+
+  void _onFormInputChanged() {
+    setState(() {});
+  }
+
+  bool get _isFormValid {
+    return _firstNameController.text.trim().isNotEmpty &&
+           _lastNameController.text.trim().isNotEmpty &&
+           _ageController.text.trim().isNotEmpty;
   }
 
 
  // Colors for the onboarding screen
-  static const Color primaryYellow = Color(0xFFFFD158); // giallo
   static const Color primaryGreen = Color(0xFF4CAF50);  // verde
   static const Color bgColor = Color(0xFFFFFDE7);       // sfondo giallo chiarissimo
   static const Color textDark = Color(0xFF2A2859);      // testo scuro
@@ -45,20 +66,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     _lottieController2.dispose();
     _pageController.dispose();
     _nameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _ageController.dispose();
     super.dispose();
   }
 
   void _nextPage() async {
-    if (_currentPage < 2) {
+    if (_currentPage < 3) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeIn,
       );
     } else {
-      // Salva il nome del pulcino in SharedPreferences
-      final sp = await SharedPreferences.getInstance();
-      await sp.setString('chickName', _chickName);
-      debugPrint('Nome del pulcino salvato in SharedPreferences: $_chickName');
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      
+      // Salva il nome del pulcino nel provider
+      await userProvider.setChickName(_chickName);
+      debugPrint('Nome del pulcino salvato in UserProvider: $_chickName');
+
+      // Salva i dettagli del profilo dell'utente nel provider
+      await userProvider.setUserProfile(
+        _firstNameController.text.trim(),
+        _lastNameController.text.trim(),
+        _selectedSex,
+        int.tryParse(_ageController.text.trim()) ?? 0,
+      );
 
       if (mounted) {
         // Vai alla homepage
@@ -78,7 +111,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
       height: 8.0,
       width: _currentPage == index ? 24.0 : 8.0,
       decoration: BoxDecoration(
-        color: _currentPage == index ? primaryGreen : primaryGreen.withOpacity(0.3),
+        color: _currentPage == index ? primaryGreen : primaryGreen.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(4.0),
       ),
     );
@@ -108,6 +141,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                       _buildPage1(),
                       _buildPage2(),
                       _buildPage3(),
+                      _buildPage4(),
                     ],
                   ),
                 ),
@@ -116,7 +150,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                   padding: const EdgeInsets.only(bottom: 40.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(3, (index) => _buildDot(index)),
+                    children: List.generate(4, (index) => _buildDot(index)),
                   ),
                 ),
               ],
@@ -197,13 +231,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
             borderColor: primaryGreen,
             borderWidth: 3,
             borderRadius: 20,
-            height: 63,
-            width: 120,
+            height: 55,
+            width: 200,
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Text(
-                "Hi! What's my name?",
-                style: TextStyle(color: primaryGreen),
+              child: Center(
+                child: Text(
+                  "Hi! What's my name?",
+                  style: TextStyle(color: primaryGreen, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ),
@@ -281,7 +317,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                   decoration: BoxDecoration(
-                    color: isSelected ? primaryGreen.withOpacity(0.3) : primaryGreen.withOpacity(0.15),
+                    color: isSelected ? primaryGreen.withValues(alpha: 0.3) : primaryGreen.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -298,7 +334,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
           ),
           
           const SizedBox(height: 24),
-          // Testo Libero per nome
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -309,20 +344,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
               controller: _nameController,
               textAlign: TextAlign.center,
               onChanged: (val) {
-                if (val.isNotEmpty) {
-                  setState(() {
-                    _chickName = val;
-                  });
-                } else {
-                  setState(() {
-                    _chickName = 'Pip'; // default fallback se si svuota il campo
-                  });
-                }
+                setState(() {
+                  _chickName = val.trim();
+                });
               },
               style: const TextStyle(color: primaryGreen, fontSize: 18),
               decoration: InputDecoration(
                 hintText: 'or type your own...',
-                hintStyle: TextStyle(color: primaryGreen.withOpacity(0.5), fontSize: 18),
+                hintStyle: TextStyle(color: primaryGreen.withValues(alpha: 0.5), fontSize: 18),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               ),
@@ -332,7 +361,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
           // Pulsante sfumato per confermare o disabilitato visualmente
           Opacity(
             opacity: _currentPage == 1 ? 1.0 : 0.5,
-            child: _buildButton("That's the name!", isLight: true),
+            child: _buildButton(
+              "That's the name!",
+              isLight: _chickName.trim().isEmpty,
+              isEnabled: _chickName.trim().isNotEmpty,
+            ),
           ),
         ],
       ),
@@ -351,14 +384,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
             color: Colors.white,
             borderColor: primaryGreen,
             borderWidth: 3,
-            borderRadius: 30,
+            borderRadius: 20,
             height: 80,
-            width: 150,
+            width: 200,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Text(
-              "Hi! I'm $_chickName,\nnice to meet you!",
-              style: const TextStyle(color: primaryGreen),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Center(
+                child: Text(
+                  "Hi! I'm $_chickName,\nnice to meet you!",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: primaryGreen, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ),
@@ -394,33 +430,257 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
             ),
           ),
           const SizedBox(height: 48),
-          _buildButton("Let's get started!"),
+          _buildButton("I'm ready!"),
         ],
       ),
     );
   }
 
-  // --- PULSANTE GENERICO ---
-  Widget _buildButton(String text, {bool isLight = false}) {
-    return Container(
-      width: double.infinity,
-      height: 55,
-      decoration: BoxDecoration(
-        color: isLight ? primaryGreen.withOpacity(0.4) : primaryGreen,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(30),
-          onTap: _nextPage,
-          child: Center(
-            child: Text(
-              text,
+  // --- PAGINA 4 ---
+  Widget _buildPage4() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+        child: Column(
+          children: [
+            const SizedBox(height: 16),
+            const SpeechBalloon(
+              nipLocation: NipLocation.bottom,
+              color: Colors.white,
+              borderColor: primaryGreen,
+              borderWidth: 3,
+              borderRadius: 20,
+              height: 55,
+              width: 200,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Center(
+                  child: Text(
+                    "Tell me about yourself!",
+                    style: TextStyle(color: primaryGreen, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Lottie.asset(
+              'assets/hatched-chick.json',
+              width: 90,
+              height: 90,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'ALMOST THERE!',
               style: TextStyle(
-                color: isLight ? Colors.white : Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
+                color: primaryGreen,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'One last step.',
+              style: TextStyle(
+                fontSize: 32,
+                color: textDark,
+                fontFamily: 'serif',
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'This helps us personalise\nyour daily goals.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 16,
+                height: 1.3,
+              ),
+            ),
+            const SizedBox(height: 24),
+            _buildTextField(
+              label: 'First name',
+              controller: _firstNameController,
+              hintText: 'Sara',
+            ),
+            const SizedBox(height: 16),
+            _buildTextField(
+              label: 'Last name',
+              controller: _lastNameController,
+              hintText: 'Rossi',
+            ),
+            const SizedBox(height: 16),
+            _buildSexSelector(),
+            const SizedBox(height: 16),
+            _buildTextField(
+              label: 'Age',
+              controller: _ageController,
+              hintText: '15',
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 32),
+            _buildButton("Let's get started!", isEnabled: _isFormValid),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- HELPER COMPONENTI INPUT ---
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    String? hintText,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: primaryGreen,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: TextField(
+            controller: controller,
+            keyboardType: keyboardType,
+            style: const TextStyle(color: textDark, fontSize: 16),
+            decoration: InputDecoration(
+              hintText: hintText,
+              hintStyle: TextStyle(color: Colors.grey.withValues(alpha: 0.6)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: primaryGreen, width: 1.5),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSexSelector() {
+    final options = [
+      {'id': 'Female', 'label': '♀ Female'},
+      {'id': 'Male', 'label': '♂ Male'},
+      {'id': 'Other', 'label': '◦ Other'},
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Sex',
+          style: TextStyle(
+            color: primaryGreen,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: options.map((opt) {
+            final isSelected = _selectedSex == opt['id'];
+            return Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedSex = opt['id']!;
+                  });
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: isSelected ? primaryGreen.withValues(alpha: 0.1) : Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(
+                      color: isSelected ? primaryGreen : Colors.grey.withValues(alpha: 0.2),
+                      width: isSelected ? 2 : 1,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      opt['label']!,
+                      style: TextStyle(
+                        color: isSelected ? primaryGreen : textDark,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  // --- PULSANTE GENERICO ---
+  Widget _buildButton(String text, {bool isLight = false, bool isOutline = false, bool isEnabled = true}) {
+    return Opacity(
+      opacity: isEnabled ? 1.0 : 0.4,
+      child: Container(
+        width: double.infinity,
+        height: 55,
+        decoration: BoxDecoration(
+          color: isOutline 
+              ? Colors.white 
+              : (isLight ? primaryGreen.withValues(alpha: 0.4) : primaryGreen),
+          borderRadius: BorderRadius.circular(30),
+          border: isOutline 
+              ? Border.all(
+                  color: isEnabled 
+                      ? Colors.grey.withValues(alpha: 0.3) 
+                      : Colors.grey.withValues(alpha: 0.2), 
+                  width: 1.5,
+                ) 
+              : null,
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(30),
+            onTap: isEnabled ? _nextPage : null,
+            child: Center(
+              child: Text(
+                text,
+                style: TextStyle(
+                  color: isOutline 
+                      ? (isEnabled ? textDark : Colors.grey.withValues(alpha: 0.6))
+                      : Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
@@ -428,4 +688,4 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
       ),
     );
   }
-} //SplashScreen
+} //OnboardingScreen
