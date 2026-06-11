@@ -5,7 +5,6 @@ import '../providers/user_provider.dart';
 import 'stats_screen.dart';
 import 'mood_screen.dart';
 import 'package:TwiC/utils/app_colors.dart';
-import 'stats_screen.dart';
 import 'shop.dart';
 
 class HomePage extends StatefulWidget {
@@ -30,11 +29,6 @@ class _HomePageState extends State<HomePage> {
   //logica della homepage
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
-
-    // Update goals dynamically from provider/selected date
-    _updateGoalsForDate(_selectedDate, userProvider.moodDone);
-
     return Scaffold(
       backgroundColor: const Color(0xFFFFFDE7),
       body: _getPage(_selectedIndex),
@@ -74,7 +68,7 @@ class _HomePageState extends State<HomePage> {
   }
 
 // The structure of the dashboard content, separated for clarity and maintainability
-  Widget _buildDashboardContent() {
+  Widget _buildDashboardContent(UserProvider userProvider) {
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -82,11 +76,11 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
-            _buildTopBar(),
+            _buildTopBar(userProvider),
             const SizedBox(height: 24),
             _buildDateNavigator(),
             const SizedBox(height: 24),
-            _buildChickSection(),
+            _buildChickSection(userProvider),
             const SizedBox(height: 20),
             _buildVitalityBar(),
             const SizedBox(height: 28),
@@ -102,7 +96,12 @@ class _HomePageState extends State<HomePage> {
   Widget _getPage(int index) {
     switch (index) {
       case 0:
-        return _buildDashboardContent();
+        return Consumer<UserProvider>(
+          builder: (context, userProvider, child) {
+            _updateGoalsForDate(_selectedDate, userProvider.moodDone);
+            return _buildDashboardContent(userProvider);
+          },
+        );
       case 1:
         return const MoodScreen();
       case 2:
@@ -110,7 +109,12 @@ class _HomePageState extends State<HomePage> {
       case 3:
         return const ShopScreen();
       default:
-        return _buildDashboardContent();
+        return Consumer<UserProvider>(
+          builder: (context, userProvider, child) {
+            _updateGoalsForDate(_selectedDate, userProvider.moodDone);
+            return _buildDashboardContent(userProvider);
+          },
+        );
     }
   }
 
@@ -266,8 +270,7 @@ class _HomePageState extends State<HomePage> {
 
   //Method 2: The _buildTopBar method builds the top bar of the dashboard.
   //It takes the userProvider as a parameter to get the first name of the user.
-  Widget _buildTopBar() {
-    final userProvider = Provider.of<UserProvider>(context);
+  Widget _buildTopBar(UserProvider userProvider) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,8 +325,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   //Method 3: The _buildChickSection method builds the chick section.  
-  Widget _buildChickSection() {
-    final userProvider = Provider.of<UserProvider>(context);
+  Widget _buildChickSection(UserProvider userProvider) {
     return Center(
       child: Column(
         children: [
