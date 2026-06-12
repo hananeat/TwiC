@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:TwiC/utils/app_colors.dart';
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
 
 // Definizione categorie oggetti del negozio
 enum ShopCategory { habitat, colors, accessories }
@@ -50,8 +52,7 @@ class ShopScreen extends StatefulWidget {
 
 class _ShopScreenState extends State<ShopScreen> {
   ShopCategory _currentCategory = ShopCategory.habitat;
-  ShopItem? _selectedItem;
-  final int _coins = 47;    //sostituire con valore dinamico
+  ShopItem? _selectedItem;    //sostituire con valore dinamico
  
   List<ShopItem> get _items => switch (_currentCategory) {
         ShopCategory.habitat   => _habitats,
@@ -59,22 +60,26 @@ class _ShopScreenState extends State<ShopScreen> {
         ShopCategory.accessories => _accessoriesItems,
       };
   
-  String get _statusMessage {
+  String _statusMessage(int coins) {
     final item = _selectedItem;
     if (item == null) return 'Select an item to see details';
     if (item.owned) return 'You already own this item';
-    if (item.price <= _coins) return 'You can afford ${item.name}';
-    return 'You need ${item.price - _coins} more coins to buy ${item.name}';
+    if (item.price <= coins) return 'You can afford ${item.name}';
+    return 'You need ${item.price - coins} more coins to buy ${item.name}';
   }
 
-  bool get _statusIsPositive {
+  bool _statusIsPositive(int coins) {
     final item = _selectedItem;
     if (item == null) return false;
-    return item.owned || item.price <= _coins;
+    return item.owned || item.price <= coins;
   }
 
   @override
   Widget build(BuildContext context) {
+    //legge valori dal provider e si aggiorna automaticamente quando cambiano
+    final userProvider = context.watch<UserProvider>();
+    final int coins = userProvider.stars; 
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -87,13 +92,13 @@ class _ShopScreenState extends State<ShopScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
-                    _buildHeader(),
+                    _buildHeader(userProvider.chickName, coins),
                     const SizedBox(height: 20),
                     _buildTabs(),
                     const SizedBox(height: 24),
-                    _buildGrid(),
+                    _buildGrid(coins),
                     const SizedBox(height: 12),
-                    _buildStatusBar(),
+                    _buildStatusBar(coins),
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -106,34 +111,34 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   //nome negozio + contatore monete
-  Widget _buildHeader() {
+  Widget _buildHeader(String chickName, int coins) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'SHOP',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1.2,
-                color: AppColors.green,
-              ),
-            ),
-            SizedBox(height: 4),
-            Text(
+            const SizedBox(height: 4),
+            const Text(
               'TwiC\'s Shop',
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.w800,
                 color: AppColors.textDark,
+              ), 
+            ),
+            Text(
+              'Personalize $chickName and make it unique as you are!',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF7A78A0),
               ),
             ),
+            const SizedBox(height: 24),
           ],
         ),
+        const SizedBox(width: 12),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
@@ -146,7 +151,7 @@ class _ShopScreenState extends State<ShopScreen> {
               const Text('⭐', style: TextStyle(fontSize: 15)),
               const SizedBox(width: 4),
               Text(
-                '$_coins',
+                '$coins',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -209,7 +214,7 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   //griglia oggetti
-  Widget _buildGrid() {
+  Widget _buildGrid(int coins) {
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -217,14 +222,14 @@ class _ShopScreenState extends State<ShopScreen> {
       crossAxisSpacing: 14,
       mainAxisSpacing: 14,
       childAspectRatio: 1.1,
-      children: _items.map((item) => _buildItemCard(item)).toList(),
+      children: _items.map((item) => _buildItemCard(item, coins)).toList(),
     );
   }
 
   //per ogni oggetto, mostra nome, icona, prezzo e stato (acquistato/non)
-  Widget _buildItemCard(ShopItem item) {
+  Widget _buildItemCard(ShopItem item, int coins) {
     final bool isSelected = _selectedItem?.id == item.id;
-    final bool locked = !item.owned && item.price > _coins;
+    final bool locked = !item.owned && item.price > coins;
  
     return GestureDetector(
       onTap: () => setState(() => _selectedItem = item),
@@ -291,24 +296,25 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   //compare stato dell'oggetto selezionato 
-  Widget _buildStatusBar() {
+  Widget _buildStatusBar(int coins) {
+    final bool positive = _statusIsPositive(coins);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: _statusIsPositive ? AppColors.green.withOpacity(0.1) : Colors.white,
+        color: positive ? AppColors.green.withOpacity(0.1) : Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4),
         ],
       ),
       child: Text(
-        _statusMessage,
+        _statusMessage(coins),
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
-          color: _statusIsPositive ? AppColors.green : AppColors.textDark,
+          color: positive ? AppColors.green : AppColors.textDark,
         ),
       ),
     );
