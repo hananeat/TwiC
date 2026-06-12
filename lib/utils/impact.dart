@@ -59,5 +59,10 @@ class Impact{
     return response.statusCode;
   } //_getAndStoreTokens
 
-
+  Future<void> deleteTokens() async {
+    final sp = await SharedPreferences.getInstance();
+    await sp.remove('access');
+    await sp.remove('refresh');
+  } //deleteTokens
+  
 }//Impact

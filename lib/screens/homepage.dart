@@ -6,6 +6,9 @@ import 'stats_screen.dart';
 import 'mood_screen.dart';
 import 'package:TwiC/utils/app_colors.dart';
 import 'shop.dart';
+import 'profile_screen.dart';
+import 'login.dart';
+import '../utils/impact.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -296,29 +299,82 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-
+        
+        // Add a badge for stars and 3 points in the top right corner
         // The Container is used to display the number of stars.
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: AppColors.yellow.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.yellow),
-          ),
-          child: Row(
-            children: [
-              const Text('⭐', style: TextStyle(fontSize: 15)),
-              const SizedBox(width: 4),
-              Text(
-                '${userProvider.stars}',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textDark,
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.yellow.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.yellow),
+             ),
+             child: Row(
+              children: [
+                const Text('⭐', style: TextStyle(fontSize: 15)),
+                const SizedBox(width: 4),
+                Text(
+                  '${userProvider.stars}',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textDark,
+                  ),
+               ),
+              ],
+             ),
+            ),
+            const SizedBox(width: 8),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, color: AppColors.textDark),
+              color: AppColors.background,
+              onSelected: (value) async{
+                if (value == 'Profile') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                  );
+                } else if (value == 'logout') {
+                  //logout functionality 
+                  final impact = Impact();
+                  await impact.deleteTokens(); // Elimina i token salvati
+
+                  if (!mounted) return;
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginPage()),
+                    (route) => false, // Rimuove tutta la navigazione precedente
+                  );
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'Profile',
+                  child: Row(
+                    children: [
+                      Icon(Icons.person_outline_rounded, color: AppColors.textDark,size: 20),
+                      SizedBox(width: 12),
+                      Text('Visualize Profile',
+                        style: TextStyle( color: AppColors.textDark)),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
+                const PopupMenuItem(
+                  value: 'logout',
+                  child: Row(
+                    children: [
+                      Icon(Icons.logout_rounded, color: Colors.red, size: 20),
+                      SizedBox(width: 12),
+                      Text('Logout',
+                      style: TextStyle( color: Colors.red)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ],
     );
@@ -486,4 +542,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-}
+} 
