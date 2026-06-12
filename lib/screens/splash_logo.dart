@@ -5,6 +5,7 @@ import 'package:lottie/lottie.dart';
 import 'login.dart';
 import 'homepage.dart';
 import 'onboarding_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SplashLogoScreen extends StatefulWidget {
   const SplashLogoScreen({super.key});
@@ -165,7 +166,7 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
               _buildRow('i', 'nteractive', _iAnim),
               _buildRow('C', 'hick', _cAnim),
             ] else ...[
-              // TwiC grande che appare e cresce (con font serif e colore scuro coerente)
+              // TwiC grande che appare e cresce (con font Poppins e colore scuro coerente)
               FadeTransition(
                 opacity: _twicShow,
                 child: AnimatedBuilder(
@@ -173,11 +174,10 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
                   builder: (context, child) {
                     return Text(
                       'TwiC',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: _twicSize.value,
                         fontWeight: FontWeight.bold,
                         color: textDark, // Stesso colore scuro della login
-                        fontFamily: 'serif', // Stesso font della login
                       ),
                     );
                   },
@@ -200,11 +200,10 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
           // Lettera dell'acronimo — sempre visibile e in grassetto
           Text(
             letter,
-            style: const TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 32,
               fontWeight: FontWeight.bold,
               color: primaryGreen, // Verde per le lettere principali dell'acronimo
-              fontFamily: 'serif',
             ),
           ),
           // Resto della parola — appare con il fade
@@ -212,11 +211,10 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
             opacity: anim,
             child: Text(
               rest,
-              style: const TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
                 color: textDark, // Testo scuro coordinato
-                fontFamily: 'serif',
               ),
             ),
           ),
