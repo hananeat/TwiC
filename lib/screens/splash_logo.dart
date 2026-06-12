@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:TwiC/utils/impact.dart';
+import 'package:lottie/lottie.dart';
 import 'login.dart';
 import 'homepage.dart';
 import 'onboarding_screen.dart';
-import 'package:google_fonts/google_fonts.dart'; // per cambiare il font
 
 class SplashLogoScreen extends StatefulWidget {
   const SplashLogoScreen({super.key});
@@ -37,12 +37,11 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
 
   bool _showFinalTwiC = false; // quando true mostra TwiC grande
 
-  //static const Color primaryPurple = Color(0xFF5D59B5);
-  //static const Color bgLight = Color(0xFFEEF0FA);
-
-  // Cambia i colori
+  // Allineiamo i colori a quelli della login page
   static const Color primaryYellow = Color(0xFFFFD158);
+  static const Color primaryGreen = Color(0xFF4CAF50);
   static const Color bgColor = Color(0xFFFFFDE7);
+  static const Color textDark = Color(0xFF2A2859);
 
   @override
   void initState() {
@@ -69,7 +68,7 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
     _twicShow = Tween<double>(begin: 0, end: 1).animate(_finalController);
 
     // TwiC cresce (da piccolo a grande)
-    _twicSize = Tween<double>(begin: 20, end: 72).animate(
+    _twicSize = Tween<double>(begin: 24, end: 72).animate(
       CurvedAnimation(parent: _finalController, curve: Curves.easeOut),
     );
 
@@ -150,9 +149,13 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           // ↑ CrossAxisAlignment.start = allinea tutto a sinistra
           children: [
-            // Pulcino in alto
-            const Text('🐥', style: TextStyle(fontSize: 50)),
-            const SizedBox(height: 32),
+            // Pulcino animato in alto (invece dell'emoji statica)
+            Lottie.asset(
+              'assets/hatching_chick.json',
+              width: 140,
+              height: 140,
+            ),
+            const SizedBox(height: 16),
 
             // Quando _showFinalTwiC è false mostriamo le parole
             // Quando è true mostriamo TwiC grande
@@ -162,7 +165,7 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
               _buildRow('i', 'nteractive', _iAnim),
               _buildRow('C', 'hick', _cAnim),
             ] else ...[
-              // TwiC grande che appare e cresce
+              // TwiC grande che appare e cresce (con font serif e colore scuro coerente)
               FadeTransition(
                 opacity: _twicShow,
                 child: AnimatedBuilder(
@@ -172,9 +175,9 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
                       'TwiC',
                       style: TextStyle(
                         fontSize: _twicSize.value,
-                        // ↑ la dimensione cresce durante l'animazione
                         fontWeight: FontWeight.bold,
-                        color: primaryYellow,
+                        color: textDark, // Stesso colore scuro della login
+                        fontFamily: 'serif', // Stesso font della login
                       ),
                     );
                   },
@@ -197,22 +200,24 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
           // Lettera dell'acronimo — sempre visibile e in grassetto
           Text(
             letter,
-            style: GoogleFonts.poppins(
+            style: const TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: primaryYellow,
-            ), // Stile del testo
+              color: primaryGreen, // Verde per le lettere principali dell'acronimo
+              fontFamily: 'serif',
+            ),
           ),
           // Resto della parola — appare con il fade
           FadeTransition(
             opacity: anim,
             child: Text(
               rest,
-              style: GoogleFonts.poppins(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: primaryYellow,
-              ), // Stile del testo
+              style: const TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: textDark, // Testo scuro coordinato
+                fontFamily: 'serif',
+              ),
             ),
           ),
         ],
