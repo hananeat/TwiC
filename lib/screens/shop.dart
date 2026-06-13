@@ -116,27 +116,29 @@ class _ShopScreenState extends State<ShopScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            const Text(
-              'TwiC\'s Shop',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textDark,
-              ), 
-            ),
-            Text(
-              'Personalize $chickName and make it unique as you are!',
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF7A78A0),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 4),
+              const Text(
+                'TwiC\'s Shop',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textDark,
+                ), 
               ),
-            ),
-            const SizedBox(height: 24),
-          ],
+              Text(
+                'Personalize $chickName and make it unique as you are!',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF7A78A0),
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
         const SizedBox(width: 12),
         Container(

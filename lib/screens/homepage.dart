@@ -278,26 +278,28 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Hi, ${userProvider.firstName}!',
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Hi, ${userProvider.firstName}!',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'How do you feel today?',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2A2859)
+              const SizedBox(height: 4),
+              const Text(
+                'How do you feel today?',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2A2859)
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         
         // Add a badge for stars and 3 points in the top right corner
