@@ -4,6 +4,7 @@ import 'providers/user_provider.dart';
 import 'screens/splash_logo.dart';
 
 void main() {
+  // Ensure that the Flutter framework is initialized before running the app
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
     ChangeNotifierProvider(
