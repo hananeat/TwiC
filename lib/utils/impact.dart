@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import '../models/steps.dart';
 import '../models/sleep.dart';
+import '../models/exercises.dart';
 
 class Impact {
 
@@ -129,6 +130,42 @@ class Impact {
       debugPrint('Error in getSleepData: ${response.statusCode}');
     }
     return null;
+  }
+  
+  // ============================
+  //      ExERCISE DATA
+  // ============================
+  // This method allows to get the exercise data from the Impact server
+  Future<List<Exercise>> getExerciseData(DateTime date) async {
+    List<Exercise> result = [];  
+    final sp = await SharedPreferences.getInstance();
+    var access = sp.getString('access');
+
+    String formattedDate = DateFormat('yyyy-MM-dd').format(date);
+    final url = '${Impact.baseUrl}data/v1/exercise/patients/$patientUsername/day/$formattedDate/';
+    final headers = {'Authorization': 'Bearer $access'};
+
+    debugPrint('Calling: $url');
+    final response = await http.get(Uri.parse(url), headers: headers);
+
+    if (response.statusCode == 200) {
+      final decodedResponse = jsonDecode(response.body);
+      
+      //check if there are exercises for the requested day
+      if (decodedResponse['data']['data'] != null) {
+        for (var i = 0; i < decodedResponse['data']['data'].length; i++) {
+          result.add(
+            Exercise.fromJson(
+              decodedResponse['data']['date'],
+              decodedResponse['data']['data'][i],
+            ),
+          );
+        }
+      }
+    } else {
+      debugPrint('Error in getExerciseData: ${response.statusCode}');
+    }
+    return result;
   }
   
 } // Impact
