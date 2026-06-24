@@ -111,7 +111,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
       height: 8.0,
       width: _currentPage == index ? 24.0 : 8.0,
       decoration: BoxDecoration(
-        color: _currentPage == index ? primaryGreen : primaryGreen.withValues(alpha: 0.3),
+        color: _currentPage == index ? primaryGreen : primaryGreen.withOpacity(0.3),
         borderRadius: BorderRadius.circular(4.0),
       ),
     );
@@ -317,7 +317,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                   decoration: BoxDecoration(
-                    color: isSelected ? primaryGreen.withValues(alpha: 0.3) : primaryGreen.withValues(alpha: 0.15),
+                    color: isSelected ? primaryGreen.withOpacity(0.3) : primaryGreen.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -351,7 +351,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
               style: const TextStyle(color: primaryGreen, fontSize: 18),
               decoration: InputDecoration(
                 hintText: 'or type your own...',
-                hintStyle: TextStyle(color: primaryGreen.withValues(alpha: 0.5), fontSize: 18),
+                hintStyle: TextStyle(color: primaryGreen.withOpacity(0.5), fontSize: 18),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               ),
@@ -553,7 +553,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
+                color: Colors.black.withOpacity(0.04),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -565,14 +565,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
             style: const TextStyle(color: textDark, fontSize: 16),
             decoration: InputDecoration(
               hintText: hintText,
-              hintStyle: TextStyle(color: Colors.grey.withValues(alpha: 0.6)),
+              hintStyle: TextStyle(color: Colors.grey.withOpacity(0.6)),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+                borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+                borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -619,10 +619,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   decoration: BoxDecoration(
-                    color: isSelected ? primaryGreen.withValues(alpha: 0.1) : Colors.white,
+                    color: isSelected ? primaryGreen.withOpacity(0.1) : Colors.white,
                     borderRadius: BorderRadius.circular(30),
                     border: Border.all(
-                      color: isSelected ? primaryGreen : Colors.grey.withValues(alpha: 0.2),
+                      color: isSelected ? primaryGreen : Colors.grey.withOpacity(0.2),
                       width: isSelected ? 2 : 1,
                     ),
                   ),
@@ -655,13 +655,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
         decoration: BoxDecoration(
           color: isOutline 
               ? Colors.white 
-              : (isLight ? primaryGreen.withValues(alpha: 0.4) : primaryGreen),
+              : (isLight ? primaryGreen.withOpacity(0.4) : primaryGreen),
           borderRadius: BorderRadius.circular(30),
           border: isOutline 
               ? Border.all(
                   color: isEnabled 
-                      ? Colors.grey.withValues(alpha: 0.3) 
-                      : Colors.grey.withValues(alpha: 0.2), 
+                      ? Colors.grey.withOpacity(0.3) 
+                      : Colors.grey.withOpacity(0.2), 
                   width: 1.5,
                 ) 
               : null,
@@ -676,7 +676,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                 text,
                 style: TextStyle(
                   color: isOutline 
-                      ? (isEnabled ? textDark : Colors.grey.withValues(alpha: 0.6))
+                      ? (isEnabled ? textDark : Colors.grey.withOpacity(0.6))
                       : Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.w500,

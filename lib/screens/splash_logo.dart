@@ -39,7 +39,7 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
   bool _showFinalTwiC = false; // quando true mostra TwiC grande
 
   // Allineiamo i colori a quelli della login page
-  static const Color primaryYellow = Color(0xFFFFD158);
+  //static const Color primaryYellow = Color(0xFFFFD158);
   static const Color primaryGreen = Color(0xFF4CAF50);
   static const Color bgColor = Color(0xFFFFFDE7);
   static const Color textDark = Color(0xFF2A2859);

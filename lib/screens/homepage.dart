@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
       body: _getPage(_selectedIndex),
       bottomNavigationBar: NavigationBar(
         backgroundColor: Colors.white,
-        indicatorColor: const Color(0xFF5D59B5).withValues(alpha: 0.15),
+        indicatorColor: const Color(0xFF5D59B5).withOpacity(0.15),
         selectedIndex: _selectedIndex,
         onDestinationSelected: (int index) {
           setState(() {
@@ -225,7 +225,7 @@ class _HomePageState extends State<HomePage> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: const Color(0xFF5D59B5).withValues(alpha: 0.15),
+                color: const Color(0xFF5D59B5).withOpacity(0.15),
                 width: 1.5,
               ),
               color: Colors.white,
@@ -256,7 +256,7 @@ class _HomePageState extends State<HomePage> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: const Color(0xFF5D59B5).withValues(alpha: 0.15),
+                color: const Color(0xFF5D59B5).withOpacity(0.15),
                 width: 1.5,
               ),
               color: Colors.white,
@@ -418,7 +418,7 @@ class _HomePageState extends State<HomePage> {
           child: LinearProgressIndicator(
             value: progress,
             minHeight: 12,
-            backgroundColor: Colors.grey.withValues(alpha: 0.15),
+            backgroundColor: Colors.grey.withOpacity(0.15),
             valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF5D59B5)),
           ),
         ),
@@ -496,9 +496,9 @@ class _HomePageState extends State<HomePage> {
               child: LinearProgressIndicator(
                 value: goal['progress'] as double,
                 minHeight: 6,
-                backgroundColor: Colors.grey.withValues(alpha: 0.15),
+                backgroundColor: Colors.grey.withOpacity(0.15),
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  done ? color : Colors.grey.withValues(alpha: 0.3),
+                  done ? color : Colors.grey.withOpacity(0.3),
                 ),
               ),
             ),
@@ -526,7 +526,7 @@ class _HomePageState extends State<HomePage> {
             decoration: BoxDecoration(
               color: done
                   ? const Color(0xFFFFF3D4)
-                  : Colors.grey.withValues(alpha: 0.1),
+                  : Colors.grey.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -536,7 +536,7 @@ class _HomePageState extends State<HomePage> {
                 fontWeight: FontWeight.w600,
                 color: done
                     ? const Color(0xFF8A6200)
-                    : Colors.grey.withValues(alpha: 0.5),
+                    : Colors.grey.withOpacity(0.5),
               ),
             ),
           ),
