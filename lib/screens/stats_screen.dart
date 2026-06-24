@@ -16,28 +16,28 @@ class StatsScreen extends StatefulWidget {
 }
 
 class _StatsScreenState extends State<StatsScreen> {
-  String _subTab = 'Settimana'; // 'Settimana', 'Mese', 'Trend'
+  String _subTab = 'Week'; // 'Week', 'Month', 'Trend'
   bool _isLoading = true;
   String _errorMessage = '';
 
-  // Contenitori dei dati per data
+  // Data containers
   final Map<DateTime, int> _stepsData = {};
   final Map<DateTime, int> _sleepData = {};
   final Map<DateTime, List<int>> _hrData = {};
 
-  // Medie calcolate per la settimana (ultimi 7 giorni)
+  // Weekly averages (last 7 days)
   double _weekAvgSteps = 0;
   double _weekAvgSleepMinutes = 0;
   double _weekAvgHR = 0;
   double _weekAvgRestingHR = 0;
 
-  // Medie calcolate per il mese (ultimi 30 giorni)
+  // Monthly averages (last 30 days)
   double _monthAvgSteps = 0;
   double _monthAvgSleepMinutes = 0;
   double _monthAvgHR = 0;
   double _monthAvgRestingHR = 0;
 
-  // Percentuali di trend
+  // Trend percentages
   double _stepsTrend = 0;
   double _sleepTrend = 0;
   double _restingHRTrend = 0;
@@ -48,7 +48,7 @@ class _StatsScreenState extends State<StatsScreen> {
     _fetchStatsData();
   }
 
-  // Pulisce la data mantenendo solo anno, mese e giorno per coerenza
+  // Clear date keeping only year, month, and day
   DateTime _dateOnly(DateTime date) {
     return DateTime(date.year, date.month, date.day);
   }
@@ -89,27 +89,26 @@ class _StatsScreenState extends State<StatsScreen> {
       if (access == null) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Nessun token di accesso trovato. Per favore effettua il login.';
+          _errorMessage = 'No access token found. Please log in.';
         });
         return;
       }
 
-      // Definiamo i 30 giorni da scaricare (da ieri andando a ritroso)
+      // 30 days of data ending yesterday
       final yesterday = DateTime.now().subtract(const Duration(days: 1));
       final dates = List.generate(
         30,
         (i) => _dateOnly(yesterday.subtract(Duration(days: i))),
       );
 
-      // Eseguiamo le chiamate in parallelo per prestazioni ottimali
+      // Perform requests in parallel
       final results = await Future.wait(
         dates.map((date) => _fetchDayData(date, access!)),
       );
 
-      // Se c'è un errore di autorizzazione (401), proviamo a fare il refresh e ripetere
       final hasUnauthorized = results.any((r) => r == 401);
       if (hasUnauthorized) {
-        debugPrint('Trovata risposta 401. Provo a fare il refresh del token...');
+        debugPrint('401 response detected. Trying to refresh token...');
         final refreshed = await _refreshAccessToken();
         if (refreshed) {
           final newAccess = sp.getString('access');
@@ -123,7 +122,7 @@ class _StatsScreenState extends State<StatsScreen> {
         }
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Sessione scaduta. Effettua nuovamente il login.';
+          _errorMessage = 'Session expired. Please log in again.';
         });
       } else {
         _processResults(dates, results);
@@ -132,14 +131,14 @@ class _StatsScreenState extends State<StatsScreen> {
       debugPrint('Error in _fetchStatsData: $e');
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Si è verificato un errore nel caricamento dei dati: $e';
+        _errorMessage = 'An error occurred while loading data: $e';
       });
     }
   }
 
   Future<dynamic> _fetchDayData(DateTime date, String access) async {
     final formattedDate = DateFormat('yyyy-MM-dd').format(date);
-    final patient = Impact.patientUsername; // 'Jpefaq6m58'
+    final patient = Impact.patientUsername;
     final headers = {'Authorization': 'Bearer $access'};
 
     final stepsUrl = '${Impact.baseUrl}data/v1/steps/patients/$patient/day/$formattedDate/';
@@ -158,7 +157,7 @@ class _StatsScreenState extends State<StatsScreen> {
       final hrResp = responses[2];
 
       if (stepsResp.statusCode == 401 || sleepResp.statusCode == 401 || hrResp.statusCode == 401) {
-        return 401; // Indica la necessità di rinfrescare il token
+        return 401;
       }
 
       int stepsVal = 0;
@@ -185,7 +184,6 @@ class _StatsScreenState extends State<StatsScreen> {
       List<int> hrList = [];
       if (hrResp.statusCode == 200) {
         final body = jsonDecode(hrResp.body);
-        // Stampa di diagnostica richiesta per ispezionare il formato del JSON dei battiti
         debugPrint('RAW HR RESPONSE FOR DATE $formattedDate: ${hrResp.body}');
         if (body['data'] != null && body['data']['data'] != null) {
           final list = body['data']['data'] as List;
@@ -228,7 +226,7 @@ class _StatsScreenState extends State<StatsScreen> {
       }
     }
 
-    // --- CALCOLO MEDIE SETTIMANALI (primi 7 giorni dell'array, indici 0-6) ---
+    // --- WEEKLY STATS (indices 0-6) ---
     int weekStepsDays = 0;
     int weekTotalSteps = 0;
     int weekSleepDays = 0;
@@ -253,7 +251,7 @@ class _StatsScreenState extends State<StatsScreen> {
       final hrList = _hrData[date] ?? [];
       if (hrList.isNotEmpty) {
         weekAllHR.addAll(hrList);
-        // Calcola frequenza cardiaca a riposo: media del 5% inferiore dei valori registrati
+        // Resting Heart Rate proxy: average of bottom 5%
         final sorted = List<int>.from(hrList)..sort();
         final limit = (sorted.length * 0.05).clamp(1, sorted.length).toInt();
         final lowest = sorted.take(limit);
@@ -267,7 +265,7 @@ class _StatsScreenState extends State<StatsScreen> {
     _weekAvgHR = weekAllHR.isNotEmpty ? weekAllHR.reduce((a, b) => a + b) / weekAllHR.length : 0;
     _weekAvgRestingHR = weekRestingHRs.isNotEmpty ? weekRestingHRs.reduce((a, b) => a + b) / weekRestingHRs.length : 0;
 
-    // --- CALCOLO MEDIE MENSILI (tutti i 30 giorni) ---
+    // --- MONTHLY STATS ---
     int monthStepsDays = 0;
     int monthTotalSteps = 0;
     int monthSleepDays = 0;
@@ -305,7 +303,7 @@ class _StatsScreenState extends State<StatsScreen> {
     _monthAvgHR = monthAllHR.isNotEmpty ? monthAllHR.reduce((a, b) => a + b) / monthAllHR.length : 0;
     _monthAvgRestingHR = monthRestingHRs.isNotEmpty ? monthRestingHRs.reduce((a, b) => a + b) / monthRestingHRs.length : 0;
 
-    // --- CALCOLO TREND (Confronto prima metà del mese (0-14) vs seconda metà (15-29)) ---
+    // --- TREND CALCULATION ---
     double h1Steps = 0;
     int h1StepsDays = 0;
     double h2Steps = 0;
@@ -384,7 +382,7 @@ class _StatsScreenState extends State<StatsScreen> {
   }
 
   Map<String, String> getMetrics(UserProvider userProvider) {
-    String moodStr = 'N/D';
+    String moodStr = 'N/A';
     if (userProvider.savedMood != -1) {
       moodStr = '${userProvider.savedMood + 1} / 5';
     }
@@ -392,62 +390,62 @@ class _StatsScreenState extends State<StatsScreen> {
     final coinsStr = userProvider.stars.toString();
 
     switch (_subTab) {
-      case 'Mese':
+      case 'Month':
         return {
-          'title': 'QUESTO MESE',
-          'passi': _monthAvgSteps > 0 ? NumberFormat('#,###', 'it_IT').format(_monthAvgSteps.round()) : 'N/D',
+          'title': 'THIS MONTH',
+          'passi': _monthAvgSteps > 0 ? NumberFormat('#,###', 'en_US').format(_monthAvgSteps.round()) : 'N/A',
           'sonno': _formatSleepMinutes(_monthAvgSleepMinutes),
           'mood': moodStr,
           'monete': '+$coinsStr',
-          'corrTitle': 'Correlazione mensile',
+          'corrTitle': 'Monthly Correlation',
           'corrSub': _monthAvgSteps > 0
-              ? 'Con una media passi di ${NumberFormat('#,###', 'it_IT').format(_monthAvgSteps.round())}, la tua frequenza cardiaca a riposo è di ${_monthAvgRestingHR.round()} bpm.'
-              : 'Fai più passi per registrare l\'impatto sulla frequenza cardiaca a riposo.',
-          'freqTitle': 'Frequenza cardiaca a riposo',
+              ? 'With a steps average of ${NumberFormat('#,###', 'en_US').format(_monthAvgSteps.round())}, your resting heart rate is ${_monthAvgRestingHR.round()} bpm.'
+              : 'Take more steps to track the impact on your resting heart rate.',
+          'freqTitle': 'Resting Heart Rate',
           'freqSub': _monthAvgRestingHR > 0
-              ? '${_monthAvgRestingHR.round()} bpm questo mese — in base dei dati reali di IMPACT.'
-              : 'Nessun dato questo mese.',
+              ? '${_monthAvgRestingHR.round()} bpm this month — based on real IMPACT data.'
+              : 'No data this month.',
         };
       case 'Trend':
         final stepsSign = _stepsTrend >= 0 ? '+' : '';
         final sleepSign = _sleepTrend >= 0 ? '+' : '';
         final hrTrendText = _restingHRTrend > 0
-            ? 'in aumento di ${_restingHRTrend.toStringAsFixed(1)} bpm rispetto a prima.'
+            ? 'increasing by ${_restingHRTrend.toStringAsFixed(1)} bpm compared to before.'
             : _restingHRTrend < 0
-                ? 'in calo di ${(_restingHRTrend * -1).toStringAsFixed(1)} bpm rispetto a prima.'
-                : 'stabile rispetto a prima.';
+                ? 'decreasing by ${(_restingHRTrend * -1).toStringAsFixed(1)} bpm compared to before.'
+                : 'stable compared to before.';
 
         return {
-          'title': 'TREND GENERALI',
-          'passi': '$stepsSign${_stepsTrend.toStringAsFixed(1)}% / mese',
-          'sonno': '$sleepSign${_sleepTrend.toStringAsFixed(1)}% / mese',
-          'mood': userProvider.savedMood != -1 ? 'Stabile' : 'N/D',
+          'title': 'GENERAL TRENDS',
+          'passi': '$stepsSign${_stepsTrend.toStringAsFixed(1)}% / month',
+          'sonno': '$sleepSign${_sleepTrend.toStringAsFixed(1)}% / month',
+          'mood': userProvider.savedMood != -1 ? 'Stable' : 'N/A',
           'monete': '$coinsStr tot',
-          'corrTitle': 'Andamento generale',
+          'corrTitle': 'General Progress',
           'corrSub': _sleepTrend > 0
-              ? 'Il tuo sonno è migliorato del ${_sleepTrend.toStringAsFixed(1)}% rispetto all\'inizio del mese.'
-              : 'Cerca di regolarizzare i tuoi orari di sonno per migliorare il trend.',
-          'freqTitle': 'Frequenza cardiaca',
+              ? 'Your sleep improved by ${_sleepTrend.toStringAsFixed(1)}% compared to the beginning of the month.'
+              : 'Try to regulate your sleep schedule to improve your trend.',
+          'freqTitle': 'Heart Rate',
           'freqSub': _monthAvgRestingHR > 0
-              ? 'La frequenza cardiaca a riposo è $hrTrendText'
-              : 'Nessun dato sufficiente per calcolare il trend.',
+              ? 'Your resting heart rate is $hrTrendText'
+              : 'Insufficient data to calculate trend.',
         };
-      case 'Settimana':
+      case 'Week':
       default:
         return {
-          'title': 'QUESTA SETTIMANA',
-          'passi': _weekAvgSteps > 0 ? NumberFormat('#,###', 'it_IT').format(_weekAvgSteps.round()) : 'N/D',
+          'title': 'THIS WEEK',
+          'passi': _weekAvgSteps > 0 ? NumberFormat('#,###', 'en_US').format(_weekAvgSteps.round()) : 'N/A',
           'sonno': _formatSleepMinutes(_weekAvgSleepMinutes),
           'mood': moodStr,
           'monete': '+$coinsStr',
-          'corrTitle': 'Correlazione rilevata',
+          'corrTitle': 'Correlation Detected',
           'corrSub': _weekAvgSleepMinutes > 360
-              ? 'Nei giorni con 6h+ di sonno il tuo livello di attività motoria è migliorato.'
-              : 'Dormire a sufficienza aiuta ad avere più energie per camminare.',
-          'freqTitle': 'Frequenza cardiaca a riposo',
+              ? 'On days with 6h+ of sleep, your average physical activity level improved.'
+              : 'Sleeping enough helps you have more energy to walk.',
+          'freqTitle': 'Resting Heart Rate',
           'freqSub': _weekAvgRestingHR > 0
-              ? '${_weekAvgRestingHR.round()} bpm questa settimana — in calo o stabile rispetto ai dati storici.'
-              : 'Nessun dato registrato questa settimana.',
+              ? '${_weekAvgRestingHR.round()} bpm this week — stable or decreasing compared to historical data.'
+              : 'No heart rate data recorded this week.',
         };
     }
   }
@@ -509,7 +507,7 @@ class _StatsScreenState extends State<StatsScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Caricamento dati da IMPACT...',
+            'we are working for you',
             style: GoogleFonts.poppins(
               fontSize: 15,
               fontWeight: FontWeight.w500,
@@ -530,13 +528,13 @@ class _StatsScreenState extends State<StatsScreen> {
           children: [
             const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
             const SizedBox(height: 16),
-              Text(
-                _errorMessage,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.black87,
-                ),
+            Text(
+              _errorMessage,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.black54,
+              ),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
@@ -548,7 +546,7 @@ class _StatsScreenState extends State<StatsScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
-              child: const Text('Riprova'),
+              child: const Text('Retry'),
             ),
           ],
         ),
@@ -566,16 +564,16 @@ class _StatsScreenState extends State<StatsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Riga Pulsanti Sub-Tab
+            // Sub-Tab Button Row
             Row(
               children: [
-                _buildSubTabButton('Settimana'),
-                _buildSubTabButton('Mese'),
+                _buildSubTabButton('Week'),
+                _buildSubTabButton('Month'),
                 _buildSubTabButton('Trend'),
               ],
             ),
             const SizedBox(height: 24),
-            // Titolo della sezione
+            // Section Title
             Text(
               metrics['title']!,
               style: GoogleFonts.poppins(
@@ -586,24 +584,24 @@ class _StatsScreenState extends State<StatsScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            // Griglia Metriche 2x2
+            // Metrics 2x2 Grid
             Row(
               children: [
-                _buildMetricCard('Media passi', metrics['passi']!),
+                _buildMetricCard('Average Steps', metrics['passi']!),
                 const SizedBox(width: 12),
-                _buildMetricCard('Media sonno', metrics['sonno']!),
+                _buildMetricCard('Average Sleep', metrics['sonno']!),
               ],
             ),
             const SizedBox(height: 12),
             Row(
               children: [
-                _buildMetricCard('Mood medio', metrics['mood']!),
+                _buildMetricCard('Average Mood', metrics['mood']!),
                 const SizedBox(width: 12),
-                _buildMetricCard('Monete guadagnate', metrics['monete']!),
+                _buildMetricCard('Coins Earned', metrics['monete']!),
               ],
             ),
             const SizedBox(height: 24),
-            // Scheda Correlazione
+            // Correlation Card
             _buildInfoCard(
               metrics['corrTitle']!,
               metrics['corrSub']!,
@@ -611,7 +609,7 @@ class _StatsScreenState extends State<StatsScreen> {
               const Color(0xFF5D59B5),
             ),
             const SizedBox(height: 12),
-            // Scheda Frequenza Cardiaca
+            // Heart Rate Card
             _buildInfoCard(
               metrics['freqTitle']!,
               metrics['freqSub']!,
