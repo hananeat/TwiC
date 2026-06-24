@@ -282,20 +282,20 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 4),
               Text(
-                'Hi, ${userProvider.firstName}!',
+                'Hi ${userProvider.firstName},',
                 style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textDark,
                 ),
               ),
-              const SizedBox(height: 4),
-              const Text(
-                'How do you feel today?',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2A2859)
+              Text(
+                'Glow and help ${userProvider.chickName} grow!',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF7A78A0),
                 ),
               ),
             ],
@@ -388,9 +388,9 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         children: [
           Image.asset(
-            'assets/images/egg.png',
-            width: 120,
-            height: 120,
+            'assets/images/chick3.png',
+            width: 220,
+            height: 220,
           ),
           const SizedBox(height: 12),
           Text(
