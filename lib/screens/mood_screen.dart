@@ -237,20 +237,20 @@ class _MoodScreenState extends State<MoodScreen> {
                                     width: 2.5,
                                   )
                                 : Border.all(
-                                    color: Colors.grey.withValues(alpha: 0.15),
+                                    color: Colors.grey.withOpacity(0.15),
                                     width: 1,
                                   ),
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: const Color(0xFF4CAF50).withValues(alpha: 0.2),
+                                      color: const Color(0xFF4CAF50).withOpacity(0.2),
                                       blurRadius: 8,
                                       spreadRadius: 1,
                                     )
                                   ]
                                 : [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.04),
+                                      color: Colors.black.withOpacity(0.04),
                                       blurRadius: 4,
                                       offset: const Offset(0, 2),
                                     )
@@ -315,7 +315,7 @@ class _MoodScreenState extends State<MoodScreen> {
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: color.withValues(alpha: 0.15),
+                                      color: color.withOpacity(0.15),
                                       blurRadius: 6,
                                       offset: const Offset(0, 2),
                                     )
@@ -337,7 +337,7 @@ class _MoodScreenState extends State<MoodScreen> {
                   const SizedBox(height: 32),
 
                   // Divider
-                  Divider(color: Colors.black.withValues(alpha: 0.06), height: 1),
+                  Divider(color: Colors.black.withOpacity(0.06), height: 1),
                   const SizedBox(height: 24),
 
                   // Insight Card (styled in light green with dark green text to align with the app's yellow/green theme)
@@ -369,7 +369,7 @@ class _MoodScreenState extends State<MoodScreen> {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF2E7D32).withValues(alpha: 0.9), // Matching dark green body
+                            color: const Color(0xFF2E7D32).withOpacity(0.9), // Matching dark green body
                             height: 1.4,
                           ),
                         ),
