@@ -15,11 +15,11 @@ class ProfileScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.yellow,
-        title: Text('Profile'),
-        iconTheme: IconThemeData(color: AppColors.textDark),
+        title: const Text('Profile'),
+        iconTheme: const IconThemeData(color: AppColors.textDark),
       ),
       body: user.isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
@@ -52,13 +52,13 @@ class ProfileScreen extends StatelessWidget {
         child: Row(
           children: [
             Icon(icon, color: AppColors.yellow),
-            SizedBox(width: 14),
+            const SizedBox(width: 14),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label, style: TextStyle(fontSize: 12 ,
                     color: AppColors.textDark.withOpacity(0.6))),
-                Text(value, style: TextStyle(
+                Text(value, style: const TextStyle(
                                 fontSize: 16, 
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.textDark)),
