@@ -26,10 +26,10 @@ class ProfileScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _profileTile(Icons.flutter_dash, 'Chick Name', user.chickName),
+                    _profileTile(Icons.pets_rounded, 'Chick Name', user.chickName),
                     _profileTile(Icons.person, 'First Name', user.firstName),
                     _profileTile(Icons.person_outline, 'Last Name', user.lastName),
-                    _profileTile(Icons.wc, 'Sex', user.sex),
+                    _profileTile(Icons.diversity_1_rounded, 'Sex', user.sex),
                     _profileTile(Icons.cake, 'Age', '${user.age}'),
                     _profileTile(Icons.star, 'Stars', '${user.stars}'),
                   ],
