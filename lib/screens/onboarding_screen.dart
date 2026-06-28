@@ -53,8 +53,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
            _lastNameController.text.trim().isNotEmpty &&
            _ageController.text.trim().isNotEmpty;
   }
-
-
+  
  // Colors for the onboarding screen
   static const Color primaryGreen = Color(0xFF4CAF50);  // verde
   static const Color bgColor = Color(0xFFFFFDE7);       // sfondo giallo chiarissimo
@@ -79,6 +78,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
         curve: Curves.easeIn,
       );
     } else {
+      // Validate the form fields before proceeding
+      final firstName = _firstNameController.text.trim();
+      final lastName = _lastNameController.text.trim();
+      final ageText = _ageController.text.trim();
+      // 1. Empty field check
+      if (firstName.isEmpty || lastName.isEmpty || ageText.isEmpty) {
+        debugPrint('Empty fields found in onboarding.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('All fields are required.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return; // Interrompe il metodo e non va avanti
+      }
+      // 2. Check if age is a valid number
+      final ageValue = int.tryParse(ageText);
+      if (ageValue == null) {
+        debugPrint('Age is not a number.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Age must be a number.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return; // Interrompe il metodo e non va avanti
+      }
+
+      //Save the data
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       
       // Salva il nome del pulcino nel provider
@@ -90,7 +118,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
         _firstNameController.text.trim(),
         _lastNameController.text.trim(),
         _selectedSex,
-        int.tryParse(_ageController.text.trim()) ?? 0,
+        ageValue,
       );
 
       if (mounted) {
