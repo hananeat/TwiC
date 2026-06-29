@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/user_provider.dart';
+import 'providers/health_data_provider.dart';
 import 'screens/splash_logo.dart';
 
 void main() {
   // Ensure that the Flutter framework is initialized before running the app
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => UserProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => HealthDataProvider()),
+      ],
       child: const MyApp(),
     ),
   );
