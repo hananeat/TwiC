@@ -102,7 +102,7 @@ class _HomePageState extends State<HomePage> {
       case 0:
         return Consumer2<UserProvider, HealthDataProvider>(
           builder: (context, userProvider, healthProvider, child) {
-            _updateGoalsForDate(_selectedDate, userProvider.moodDone, healthProvider);
+            _updateGoalsForDate(_selectedDate, userProvider.isMoodDoneForDate(_selectedDate), healthProvider);
             return healthProvider.isLoading
                 ? const Scaffold(
                     backgroundColor: Color(0xFFFFFDE7),
@@ -116,7 +116,7 @@ class _HomePageState extends State<HomePage> {
           },
         );
       case 1:
-        return const MoodScreen();
+        return MoodScreen(date: _selectedDate);
       case 2:
         return const StatsScreen();
       case 3:
@@ -124,7 +124,7 @@ class _HomePageState extends State<HomePage> {
       default:
         return Consumer2<UserProvider, HealthDataProvider>(
           builder: (context, userProvider, healthProvider, child) {
-            _updateGoalsForDate(_selectedDate, userProvider.moodDone, healthProvider);
+            _updateGoalsForDate(_selectedDate, userProvider.isMoodDoneForDate(_selectedDate), healthProvider);
             return healthProvider.isLoading
                 ? const Scaffold(
                     backgroundColor: Color(0xFFFFFDE7),
