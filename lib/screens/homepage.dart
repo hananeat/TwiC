@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
+import '../providers/health_data_provider.dart';
 import 'stats_screen.dart';
 import 'mood_screen.dart';
 import 'package:TwiC/utils/app_colors.dart';
@@ -99,10 +100,19 @@ class _HomePageState extends State<HomePage> {
   Widget _getPage(int index) {
     switch (index) {
       case 0:
-        return Consumer<UserProvider>(
-          builder: (context, userProvider, child) {
-            _updateGoalsForDate(_selectedDate, userProvider.moodDone);
-            return _buildDashboardContent(userProvider);
+        return Consumer2<UserProvider, HealthDataProvider>(
+          builder: (context, userProvider, healthProvider, child) {
+            _updateGoalsForDate(_selectedDate, userProvider.moodDone, healthProvider);
+            return healthProvider.isLoading
+                ? const Scaffold(
+                    backgroundColor: Color(0xFFFFFDE7),
+                    body: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF5D59B5)),
+                      ),
+                    ),
+                  )
+                : _buildDashboardContent(userProvider);
           },
         );
       case 1:
@@ -112,10 +122,19 @@ class _HomePageState extends State<HomePage> {
       case 3:
         return const ShopScreen();
       default:
-        return Consumer<UserProvider>(
-          builder: (context, userProvider, child) {
-            _updateGoalsForDate(_selectedDate, userProvider.moodDone);
-            return _buildDashboardContent(userProvider);
+        return Consumer2<UserProvider, HealthDataProvider>(
+          builder: (context, userProvider, healthProvider, child) {
+            _updateGoalsForDate(_selectedDate, userProvider.moodDone, healthProvider);
+            return healthProvider.isLoading
+                ? const Scaffold(
+                    backgroundColor: Color(0xFFFFFDE7),
+                    body: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF5D59B5)),
+                      ),
+                    ),
+                  )
+                : _buildDashboardContent(userProvider);
           },
         );
     }
@@ -127,6 +146,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _initGoals();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<HealthDataProvider>(context, listen: false)
+          .fetchDataOfDay(_selectedDate);
+    });
   }
 
   void _initGoals() {
@@ -168,23 +191,44 @@ class _HomePageState extends State<HomePage> {
 
 // The _updateGoalsForDate method updates the _goals list with the goals for the selected date.
 // It takes the selected date and the moodDoneToday boolean as parameters.
-  void _updateGoalsForDate(DateTime date, bool moodDoneToday) {
+  void _updateGoalsForDate(DateTime date, bool moodDoneToday, HealthDataProvider healthProvider) {
+    const int stepsTarget = 10000;
+    const int sleepTargetMinutes = 480; // 8 ore
+    const int exerciseTargetSessions = 1;
+
+    final steps = healthProvider.totalSteps;
+    final sleepMin = healthProvider.totalSleepMinutes;
+    final exercises = healthProvider.totalExerciseSessions;
+
+    // Calcolo progresso
+    final stepsProgress = stepsTarget > 0 ? (steps / stepsTarget).clamp(0.0, 1.0) : 0.0;
+    final sleepProgress = sleepTargetMinutes > 0 ? (sleepMin / sleepTargetMinutes).clamp(0.0, 1.0) : 0.0;
+    final exerciseProgress = exerciseTargetSessions > 0 ? (exercises / exerciseTargetSessions).clamp(0.0, 1.0) : 0.0;
+
+    final stepsValue = NumberFormat('#,###', 'it_IT').format(steps);
+
+    final sleepHours = sleepMin ~/ 60;
+    final sleepMins = sleepMin % 60;
+    final sleepValue = sleepHours > 0
+        ? '${sleepHours}h${sleepMins.toString().padLeft(2, '0')}'
+        : '${sleepMins}m';
+
     _goals = [
       {
         'label': 'Steps',
         'color': const Color(0xFF3DBF7A),
-        'progress': 0.60,
-        'value': '5.8k',
+        'progress': stepsProgress,
+        'value': stepsValue,
         'points': '+7',
-        'done': true,
+        'done': steps >= stepsTarget,
       },
       {
         'label': 'Sleep',
         'color': const Color(0xFF3BAEE8),
-        'progress': 0.72,
-        'value': '7h12',
+        'progress': sleepProgress,
+        'value': sleepValue,
         'points': '+10',
-        'done': true,
+        'done': sleepMin >= sleepTargetMinutes,
       },
       {
         'label': 'Mood',
@@ -197,10 +241,10 @@ class _HomePageState extends State<HomePage> {
       {
         'label': 'Exercise',
         'color': const Color(0xFF5D59B5),
-        'progress': 0.50,
-        'value': '1 sess.',
+        'progress': exerciseProgress,
+        'value': exercises == 1 ? '1 sess.' : '$exercises sess.',
         'points': '+6',
-        'done': true,
+        'done': exercises >= exerciseTargetSessions,
       },
     ];
   }
@@ -218,6 +262,8 @@ class _HomePageState extends State<HomePage> {
             setState(() {
               _selectedDate = _selectedDate.subtract(const Duration(days: 1));
             });
+            Provider.of<HealthDataProvider>(context, listen: false)
+                .fetchDataOfDay(_selectedDate);
           },
           child: Container(
             width: 44,
@@ -249,6 +295,8 @@ class _HomePageState extends State<HomePage> {
             setState(() {
               _selectedDate = _selectedDate.add(const Duration(days: 1));
             });
+            Provider.of<HealthDataProvider>(context, listen: false)
+                .fetchDataOfDay(_selectedDate);
           },
           child: Container(
             width: 44,
@@ -507,7 +555,7 @@ class _HomePageState extends State<HomePage> {
  
           // Valore (ora è statico)
           SizedBox(
-            width: 44,
+            width: 60,
             child: Text(
               goal['value'] as String,
               textAlign: TextAlign.right,

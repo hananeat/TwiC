@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import '../models/steps.dart';
 import '../models/sleep.dart';
 import '../models/exercises.dart';
@@ -78,22 +79,33 @@ class Impact {
     final sp = await SharedPreferences.getInstance();
     var access = sp.getString('access');
 
+    // Se il token è scaduto o nullo, lo aggiorna prima di inviare la richiesta
+    if (access == null || JwtDecoder.isExpired(access)) {
+      await refreshTokens();
+      access = sp.getString('access');
+    }
+
     String formattedDate = DateFormat('yyyy-MM-dd').format(date);
     final url = '${Impact.baseUrl}data/v1/steps/patients/$patientUsername/day/$formattedDate/';
     final headers = {'Authorization': 'Bearer $access'};
 
     debugPrint('Calling: $url');
     final response = await http.get(Uri.parse(url), headers: headers);
+    debugPrint('Steps response status: ${response.statusCode}');
+    debugPrint('Steps response body: ${response.body}');
 
     if (response.statusCode == 200) {
       final decodedResponse = jsonDecode(response.body);
-      for (var i = 0; i < decodedResponse['data']['data'].length; i++) {
-        result.add(
-          Steps.fromJson(
-            decodedResponse['data']['date'],
-            decodedResponse['data']['data'][i],
-          ),
-        );
+      if (decodedResponse['data'] is Map && decodedResponse['data']['data'] != null) {
+        final stepsList = decodedResponse['data']['data'] as List;
+        for (var i = 0; i < stepsList.length; i++) {
+          result.add(
+            Steps.fromJson(
+              decodedResponse['data']['date'].toString(),
+              stepsList[i],
+            ),
+          );
+        }
       }
     } else {
       debugPrint('Error in getStepsData: ${response.statusCode}');
@@ -109,20 +121,28 @@ class Impact {
     final sp = await SharedPreferences.getInstance();
     var access = sp.getString('access');
 
+    // Se il token è scaduto o nullo, lo aggiorna prima di inviare la richiesta
+    if (access == null || JwtDecoder.isExpired(access)) {
+      await refreshTokens();
+      access = sp.getString('access');
+    }
+
     String formattedDate = DateFormat('yyyy-MM-dd').format(date);
     final url = '${Impact.baseUrl}data/v1/sleep/patients/$patientUsername/day/$formattedDate/';
     final headers = {'Authorization': 'Bearer $access'};
 
     debugPrint('Calling: $url');
     final response = await http.get(Uri.parse(url), headers: headers);
+    debugPrint('Sleep response status: ${response.statusCode}');
+    debugPrint('Sleep response body: ${response.body}');
 
     if (response.statusCode == 200) {
       final decodedResponse = jsonDecode(response.body);
       
       // Check if there is data for the requested day
-      if (decodedResponse['data']['data'] != null) {
+      if (decodedResponse['data'] is Map && decodedResponse['data']['data'] != null) {
         return Sleep.fromJson(
-          decodedResponse['data']['date'],
+          decodedResponse['data']['date'].toString(),
           decodedResponse['data']['data'],
         );
       }
@@ -141,23 +161,32 @@ class Impact {
     final sp = await SharedPreferences.getInstance();
     var access = sp.getString('access');
 
+    // Se il token è scaduto o nullo, lo aggiorna prima di inviare la richiesta
+    if (access == null || JwtDecoder.isExpired(access)) {
+      await refreshTokens();
+      access = sp.getString('access');
+    }
+
     String formattedDate = DateFormat('yyyy-MM-dd').format(date);
     final url = '${Impact.baseUrl}data/v1/exercise/patients/$patientUsername/day/$formattedDate/';
     final headers = {'Authorization': 'Bearer $access'};
 
     debugPrint('Calling: $url');
     final response = await http.get(Uri.parse(url), headers: headers);
+    debugPrint('Exercise response status: ${response.statusCode}');
+    debugPrint('Exercise response body: ${response.body}');
 
     if (response.statusCode == 200) {
       final decodedResponse = jsonDecode(response.body);
       
       //check if there are exercises for the requested day
-      if (decodedResponse['data']['data'] != null) {
-        for (var i = 0; i < decodedResponse['data']['data'].length; i++) {
+      if (decodedResponse['data'] is Map && decodedResponse['data']['data'] != null) {
+        final exerciseList = decodedResponse['data']['data'] as List;
+        for (var i = 0; i < exerciseList.length; i++) {
           result.add(
             Exercise.fromJson(
-              decodedResponse['data']['date'],
-              decodedResponse['data']['data'][i],
+              decodedResponse['data']['date'].toString(),
+              exerciseList[i],
             ),
           );
         }

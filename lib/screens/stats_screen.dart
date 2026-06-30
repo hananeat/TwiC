@@ -103,7 +103,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
       // Perform requests in parallel
       final results = await Future.wait(
-        dates.map((date) => _fetchDayData(date, access!)),
+        dates.map((date) => _fetchDayData(date, access)),
       );
 
       final hasUnauthorized = results.any((r) => r == 401);
@@ -137,7 +137,9 @@ class _StatsScreenState extends State<StatsScreen> {
   }
 
   Future<dynamic> _fetchDayData(DateTime date, String access) async {
-    final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+    // Shift di 365 giorni per allinearsi al database del 2025
+    final queryDate = DateTime(date.year - 1, date.month, date.day);
+    final formattedDate = DateFormat('yyyy-MM-dd').format(queryDate);
     final patient = Impact.patientUsername;
     final headers = {'Authorization': 'Bearer $access'};
 
@@ -163,10 +165,10 @@ class _StatsScreenState extends State<StatsScreen> {
       int stepsVal = 0;
       if (stepsResp.statusCode == 200) {
         final body = jsonDecode(stepsResp.body);
-        if (body['data'] != null && body['data']['data'] != null) {
+        if (body['data'] is Map && body['data']['data'] != null) {
           final list = body['data']['data'] as List;
           stepsVal = list.fold<int>(0, (sum, item) {
-            final val = int.tryParse(item['value']?.toString() ?? '0') ?? 0;
+            final val = double.tryParse(item['value']?.toString() ?? '0')?.round() ?? 0;
             return sum + val;
           });
         }
@@ -175,7 +177,7 @@ class _StatsScreenState extends State<StatsScreen> {
       int sleepMinutes = 0;
       if (sleepResp.statusCode == 200) {
         final body = jsonDecode(sleepResp.body);
-        if (body['data'] != null && body['data']['data'] != null) {
+        if (body['data'] is Map && body['data']['data'] != null) {
           final data = body['data']['data'];
           sleepMinutes = int.tryParse(data['minutesAsleep']?.toString() ?? '0') ?? 0;
         }
@@ -185,7 +187,7 @@ class _StatsScreenState extends State<StatsScreen> {
       if (hrResp.statusCode == 200) {
         final body = jsonDecode(hrResp.body);
         debugPrint('RAW HR RESPONSE FOR DATE $formattedDate: ${hrResp.body}');
-        if (body['data'] != null && body['data']['data'] != null) {
+        if (body['data'] is Map && body['data']['data'] != null) {
           final list = body['data']['data'] as List;
           for (var item in list) {
             final val = int.tryParse(item['value']?.toString() ?? '');
