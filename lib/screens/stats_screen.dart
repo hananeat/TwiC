@@ -384,10 +384,12 @@ class _StatsScreenState extends State<StatsScreen> {
   }
 
   Map<String, String> getMetrics(UserProvider userProvider) {
-    String moodStr = 'N/A';
-    if (userProvider.savedMood != -1) {
-      moodStr = '${userProvider.savedMood + 1} / 5';
-    }
+    final weekAvgMood = userProvider.getAverageMood(7);
+    final monthAvgMood = userProvider.getAverageMood(30);
+    
+    final weekMoodStr = weekAvgMood > 0 ? '${weekAvgMood.toStringAsFixed(1)} / 5' : 'N/A';
+    final monthMoodStr = monthAvgMood > 0 ? '${monthAvgMood.toStringAsFixed(1)} / 5' : 'N/A';
+    final trendMoodStr = monthAvgMood > 0 ? (monthAvgMood >= 3.5 ? 'Good' : (monthAvgMood >= 2.5 ? 'Stable' : 'Low')) : 'N/A';
 
     final coinsStr = userProvider.stars.toString();
 
@@ -397,7 +399,7 @@ class _StatsScreenState extends State<StatsScreen> {
           'title': 'THIS MONTH',
           'passi': _monthAvgSteps > 0 ? NumberFormat('#,###', 'en_US').format(_monthAvgSteps.round()) : 'N/A',
           'sonno': _formatSleepMinutes(_monthAvgSleepMinutes),
-          'mood': moodStr,
+          'mood': monthMoodStr,
           'monete': '+$coinsStr',
           'corrTitle': 'Monthly Correlation',
           'corrSub': _monthAvgSteps > 0
@@ -421,7 +423,7 @@ class _StatsScreenState extends State<StatsScreen> {
           'title': 'GENERAL TRENDS',
           'passi': '$stepsSign${_stepsTrend.toStringAsFixed(1)}% / month',
           'sonno': '$sleepSign${_sleepTrend.toStringAsFixed(1)}% / month',
-          'mood': userProvider.savedMood != -1 ? 'Stable' : 'N/A',
+          'mood': trendMoodStr,
           'monete': '$coinsStr tot',
           'corrTitle': 'General Progress',
           'corrSub': _sleepTrend > 0
@@ -438,7 +440,7 @@ class _StatsScreenState extends State<StatsScreen> {
           'title': 'THIS WEEK',
           'passi': _weekAvgSteps > 0 ? NumberFormat('#,###', 'en_US').format(_weekAvgSteps.round()) : 'N/A',
           'sonno': _formatSleepMinutes(_weekAvgSleepMinutes),
-          'mood': moodStr,
+          'mood': weekMoodStr,
           'monete': '+$coinsStr',
           'corrTitle': 'Correlation Detected',
           'corrSub': _weekAvgSleepMinutes > 360

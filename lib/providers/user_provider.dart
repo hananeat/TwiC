@@ -12,11 +12,48 @@ class UserProvider extends ChangeNotifier {
   late String _sex;
   late int _age;
   int _stars = 0;
-  bool _moodDone = false;
-  int _savedMood = -1; // -1 indicates no mood has been saved yet
-  List<String> _savedChips = []; // Start with an empty list of chips
+  
+  // Date-specific mood check-in data (keyed by yyyy-MM-dd)
+  final Map<String, bool> _moodDoneMap = {};
+  final Map<String, int> _savedMoodMap = {};
+  final Map<String, List<String>> _savedChipsMap = {};
+
   bool _isLoading = true;
   bool _isDataLoaded = false; // Flag to prevent async race conditions
+
+  // Helper to generate a date string key: yyyy-MM-dd
+  String _dateKey(DateTime date) {
+    return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+  }
+
+  // Getters for specific dates
+  bool isMoodDoneForDate(DateTime date) {
+    return _moodDoneMap[_dateKey(date)] ?? false;
+  }
+
+  int getSavedMoodForDate(DateTime date) {
+    return _savedMoodMap[_dateKey(date)] ?? -1;
+  }
+
+  List<String> getSavedChipsForDate(DateTime date) {
+    return _savedChipsMap[_dateKey(date)] ?? [];
+  }
+
+  // Calculate average mood rating (1 to 5) for the last N days
+  double getAverageMood(int days) {
+    int totalMood = 0;
+    int count = 0;
+    final now = DateTime.now();
+    for (int i = 0; i < days; i++) {
+      final date = now.subtract(Duration(days: i));
+      final mood = getSavedMoodForDate(date);
+      if (mood != -1) {
+        totalMood += (mood + 1); // convert 0-4 index to 1-5 rating
+        count++;
+      }
+    }
+    return count > 0 ? totalMood / count : 0.0;
+  }
 
   // Getters for the user data: these allow other parts of the app to access the user data without directly modifying it
   String get chickName => _chickName;
@@ -25,9 +62,11 @@ class UserProvider extends ChangeNotifier {
   String get sex => _sex;
   int get age => _age;
   int get stars => _stars;
-  bool get moodDone => _moodDone;
-  int get savedMood => _savedMood;
-  List<String> get savedChips => _savedChips;
+  
+  // Default to today's values for backward compatibility
+  bool get moodDone => isMoodDoneForDate(DateTime.now());
+  int get savedMood => getSavedMoodForDate(DateTime.now());
+  List<String> get savedChips => getSavedChipsForDate(DateTime.now());
   bool get isLoading => _isLoading;
 
   // Constructor of the class UserProvider: it calls the loadUserData() method to load the user data from SharedPreferences
@@ -63,9 +102,36 @@ class UserProvider extends ChangeNotifier {
         }
         
         _stars = sp.getInt('stars') ?? 0;
-        _savedMood = sp.getInt('saved_mood') ?? -1;
-        _savedChips = sp.getStringList('saved_chips') ?? [];
-        _moodDone = sp.getBool('mood_done') ?? false;
+        
+        // Load date-specific keys
+        final keys = sp.getKeys();
+        for (var key in keys) {
+          if (key.startsWith('mood_done_')) {
+            final dateStr = key.substring('mood_done_'.length);
+            _moodDoneMap[dateStr] = sp.getBool(key) ?? false;
+          } else if (key.startsWith('saved_mood_')) {
+            final dateStr = key.substring('saved_mood_'.length);
+            _savedMoodMap[dateStr] = sp.getInt(key) ?? -1;
+          } else if (key.startsWith('saved_chips_')) {
+            final dateStr = key.substring('saved_chips_'.length);
+            _savedChipsMap[dateStr] = sp.getStringList(key) ?? [];
+          }
+        }
+
+        // Migrate legacy single-day keys to today's date if not already populated
+        final todayStr = _dateKey(DateTime.now());
+        final legacyMoodDone = sp.getBool('mood_done');
+        if (legacyMoodDone != null && !_moodDoneMap.containsKey(todayStr)) {
+          _moodDoneMap[todayStr] = legacyMoodDone;
+        }
+        final legacySavedMood = sp.getInt('saved_mood');
+        if (legacySavedMood != null && !_savedMoodMap.containsKey(todayStr)) {
+          _savedMoodMap[todayStr] = legacySavedMood;
+        }
+        final legacySavedChips = sp.getStringList('saved_chips');
+        if (legacySavedChips != null && !_savedChipsMap.containsKey(todayStr)) {
+          _savedChipsMap[todayStr] = legacySavedChips;
+        }
         
         _isDataLoaded = true;
       }
@@ -115,18 +181,21 @@ class UserProvider extends ChangeNotifier {
   }
 
   // Method 3: Save the user's mood and chips/tags (to SharedPreferences)
-  // If moodDone is false, add 5 stars to the user's stars
-  // Set moodDone to true
+  // If moodDone is false for the given date, add 5 stars to the user's stars
+  // Set moodDone to true for that date
   // Save the user's mood and chips/tags to SharedPreferences
-  Future<bool> saveCheckIn(int moodIndex, List<String> chips) async {
+  Future<bool> saveCheckIn(int moodIndex, List<String> chips, {DateTime? date}) async {
     _isDataLoaded = true;
-    _savedMood = moodIndex; // Save the user's mood (index from 0 to 4)
-    _savedChips = chips; // Save the user's chips/tags
+    final targetDate = date ?? DateTime.now();
+    final keyStr = _dateKey(targetDate);
+
+    _savedMoodMap[keyStr] = moodIndex;
+    _savedChipsMap[keyStr] = chips;
     
     bool coinsAdded = false; // Variable to check if coins have been added
-    if (!_moodDone) {
+    if (!isMoodDoneForDate(targetDate)) {
       _stars += 5; // Add 5 stars to the user's stars
-      _moodDone = true; // Set moodDone to true
+      _moodDoneMap[keyStr] = true; // Set moodDone to true
       coinsAdded = true; // Set coinsAdded to true
     }
     
@@ -135,12 +204,20 @@ class UserProvider extends ChangeNotifier {
     // Save the user data to SharedPreferences (local database)
     try {
       final sp = await SharedPreferences.getInstance();
-      await sp.setInt('saved_mood', _savedMood);
-      await sp.setStringList('saved_chips', _savedChips);
-      // If coins have been added, save them to SharedPreferences
+      await sp.setInt('saved_mood_$keyStr', moodIndex);
+      await sp.setStringList('saved_chips_$keyStr', chips);
       if (coinsAdded) {
         await sp.setInt('stars', _stars);
-        await sp.setBool('mood_done', true);
+        await sp.setBool('mood_done_$keyStr', true);
+      }
+
+      // Legacy fallback keys (only if it is today)
+      if (keyStr == _dateKey(DateTime.now())) {
+        await sp.setInt('saved_mood', moodIndex);
+        await sp.setStringList('saved_chips', chips);
+        if (coinsAdded) {
+          await sp.setBool('mood_done', true);
+        }
       }
     } catch (e) {
       debugPrint('Error saving check-in in UserProvider: $e');

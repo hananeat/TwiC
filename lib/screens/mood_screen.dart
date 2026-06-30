@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../providers/user_provider.dart';
 
 class MoodScreen extends StatefulWidget {
-  const MoodScreen({super.key});
+  final DateTime? date;
+  const MoodScreen({super.key, this.date});
 
   @override
   State<MoodScreen> createState() => _MoodScreenState();
@@ -72,12 +74,21 @@ class _MoodScreenState extends State<MoodScreen> {
 
   void _updateLocalState(UserProvider userProvider) {
     if (mounted) {
+      final targetDate = widget.date ?? DateTime.now();
       setState(() {
-        _selectedMoodIndex = userProvider.savedMood == -1 ? 2 : userProvider.savedMood;
-        _selectedChips = List<String>.from(userProvider.savedChips);
-        _isAlreadySaved = userProvider.moodDone;
+        _selectedMoodIndex = userProvider.getSavedMoodForDate(targetDate) == -1 ? 2 : userProvider.getSavedMoodForDate(targetDate);
+        _selectedChips = List<String>.from(userProvider.getSavedChipsForDate(targetDate));
+        _isAlreadySaved = userProvider.isMoodDoneForDate(targetDate);
         _isLoading = false;
       });
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant MoodScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.date != widget.date) {
+      _initFromProvider();
     }
   }
 
@@ -95,7 +106,8 @@ class _MoodScreenState extends State<MoodScreen> {
     });
 
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final coinsAdded = await userProvider.saveCheckIn(_selectedMoodIndex, _selectedChips);
+    final targetDate = widget.date ?? DateTime.now();
+    final coinsAdded = await userProvider.saveCheckIn(_selectedMoodIndex, _selectedChips, date: targetDate);
 
     if (mounted) {
       setState(() {
@@ -203,6 +215,23 @@ class _MoodScreenState extends State<MoodScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
+                  
+                  // Date display
+                  Row(
+                    children: [
+                      const Icon(Icons.calendar_today_rounded, size: 14, color: Color(0xFF5D59B5)),
+                      const SizedBox(width: 6),
+                      Text(
+                        DateFormat('EEEE, d MMM yyyy').format(widget.date ?? DateTime.now()),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF5D59B5),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
                   
                   // Header subtitle
                   Text(
