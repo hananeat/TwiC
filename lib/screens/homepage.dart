@@ -10,6 +10,7 @@ import 'shop.dart';
 import 'profile_screen.dart';
 import 'login.dart';
 import '../utils/impact.dart';
+import '../utils/goal_calculation.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -102,7 +103,7 @@ class _HomePageState extends State<HomePage> {
       case 0:
         return Consumer2<UserProvider, HealthDataProvider>(
           builder: (context, userProvider, healthProvider, child) {
-            _updateGoalsForDate(_selectedDate, userProvider.isMoodDoneForDate(_selectedDate), healthProvider);
+            _updateGoalsForDate(_selectedDate, userProvider.isMoodDoneForDate(_selectedDate), healthProvider, userProvider);
             return healthProvider.isLoading
                 ? const Scaffold(
                     backgroundColor: Color(0xFFFFFDE7),
@@ -124,7 +125,7 @@ class _HomePageState extends State<HomePage> {
       default:
         return Consumer2<UserProvider, HealthDataProvider>(
           builder: (context, userProvider, healthProvider, child) {
-            _updateGoalsForDate(_selectedDate, userProvider.isMoodDoneForDate(_selectedDate), healthProvider);
+            _updateGoalsForDate(_selectedDate, userProvider.isMoodDoneForDate(_selectedDate), healthProvider, userProvider);
             return healthProvider.isLoading
                 ? const Scaffold(
                     backgroundColor: Color(0xFFFFFDE7),
@@ -191,19 +192,17 @@ class _HomePageState extends State<HomePage> {
 
 // The _updateGoalsForDate method updates the _goals list with the goals for the selected date.
 // It takes the selected date and the moodDoneToday boolean as parameters.
-  void _updateGoalsForDate(DateTime date, bool moodDoneToday, HealthDataProvider healthProvider) {
-    const int stepsTarget = 10000;
-    const int sleepTargetMinutes = 480; // 8 ore
-    const int exerciseTargetSessions = 1;
-
+    void _updateGoalsForDate(DateTime date, bool moodDoneToday, HealthDataProvider healthProvider, UserProvider userProvider) {
     final steps = healthProvider.totalSteps;
     final sleepMin = healthProvider.totalSleepMinutes;
     final exercises = healthProvider.totalExerciseSessions;
-
-    // Calcolo progresso
-    final stepsProgress = stepsTarget > 0 ? (steps / stepsTarget).clamp(0.0, 1.0) : 0.0;
-    final sleepProgress = sleepTargetMinutes > 0 ? (sleepMin / sleepTargetMinutes).clamp(0.0, 1.0) : 0.0;
-    final exerciseProgress = exerciseTargetSessions > 0 ? (exercises / exerciseTargetSessions).clamp(0.0, 1.0) : 0.0;
+    
+    // Esegue il calcolo dinamico in base all'età
+    final reward = GoalCalculation.calculate(
+      age: userProvider.age,
+      steps: steps,
+      sleepMinutes: sleepMin,
+    );
 
     final stepsValue = NumberFormat('#,###', 'it_IT').format(steps);
 
@@ -213,22 +212,25 @@ class _HomePageState extends State<HomePage> {
         ? '${sleepHours}h${sleepMins.toString().padLeft(2, '0')}'
         : '${sleepMins}m';
 
+    const int exerciseTargetSessions = 1;
+    final exerciseProgress = exerciseTargetSessions > 0 ? (exercises / exerciseTargetSessions).clamp(0.0, 1.0) : 0.0;
+
     _goals = [
       {
         'label': 'Steps',
         'color': const Color(0xFF3DBF7A),
-        'progress': stepsProgress,
-        'value': stepsValue,
-        'points': '+7',
-        'done': steps >= stepsTarget,
+        'progress': reward.stepsProgress,
+        'value': '$stepsValue / ${reward.stepsTarget}',
+        'points': reward.stepsPoints > 0 ? '+${reward.stepsPoints}' : '0',
+        'done': reward.stepsDone,
       },
       {
         'label': 'Sleep',
         'color': const Color(0xFF3BAEE8),
-        'progress': sleepProgress,
-        'value': sleepValue,
-        'points': '+10',
-        'done': sleepMin >= sleepTargetMinutes,
+        'progress': reward.sleepProgress,
+        'value': '$sleepValue / ${reward.sleepTargetMinutes ~/ 60}h',
+        'points': reward.sleepPoints > 0 ? '+${reward.sleepPoints}' : '0',
+        'done': reward.sleepDone,
       },
       {
         'label': 'Mood',
@@ -248,6 +250,7 @@ class _HomePageState extends State<HomePage> {
       },
     ];
   }
+
 
 // METHODS FOR BUILDING THE DASHBOARD CONTENT
 // Method 1: The _buildDateNavigator method builds the date navigator.  

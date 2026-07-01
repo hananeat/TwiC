@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'providers/user_provider.dart';
 import 'providers/health_data_provider.dart';
 import 'screens/splash_logo.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   // Ensure that the Flutter framework is initialized before running the app
@@ -21,12 +22,18 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  @override
+   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: 'TwiC',
       debugShowCheckedModeBanner: false,
-      home: SplashLogoScreen(),
+      theme: ThemeData(
+        // Imposta Poppins come font di default per tutta l'applicazione
+        textTheme: GoogleFonts.poppinsTextTheme(
+          Theme.of(context).textTheme,
+        ),
+      ),
+      home: const SplashLogoScreen(),
     );
-  } //build
-}//MyApp
+  } 
+}
