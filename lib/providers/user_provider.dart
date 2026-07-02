@@ -226,5 +226,31 @@ class UserProvider extends ChangeNotifier {
 
     return coinsAdded;
   }
-}
 
+  // Method to reset the user's data with logout
+  Future<void> clearUserData() async {
+    // Reset all user data to default values
+    _chickName = '';
+    _firstName = '';
+    _lastName = '';
+    _sex = 'Female';
+    _age = 0;
+    _stars = 0;
+    // Clear all date-specific mood check-in data
+    _savedMoodMap.clear();
+    _savedChipsMap.clear();
+    _moodDoneMap.clear();
+    // Reset the flags
+    _isDataLoaded = false;
+    _isLoading = false;
+
+    notifyListeners();
+
+    try {
+      final sp = await SharedPreferences.getInstance();
+      await sp.clear(); // Clear all data from SharedPreferences
+    } catch (e) {
+      debugPrint('Error clearing user data in UserProvider: $e');
+    }
+  }
+}

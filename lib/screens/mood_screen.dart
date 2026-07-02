@@ -180,6 +180,48 @@ class _MoodScreenState extends State<MoodScreen> {
       );
     }
   }
+  
+  //Genera l'insight text in base ai chip selezionati 
+  String _getInsightText(List<String> chips, String chickName) {
+    if (chips.isEmpty) {
+      return "Select what happened today to get insights from $chickName!";
+    }
+    
+    // Insight text of chips
+    final Map<String, String> descriptions = {
+      'studied': ' you put time and effort into your goals',
+      'tired': ' it\'s okay to slow down and rest if you need to',
+      'slept_well': ' you had a good night\'s sleep, it can make a big difference',
+      'exam_stress': ' you are stressed about an exam, but remember that exams doesn\'t define your worth',
+    };
+
+    List<String> activePhrases = [];
+    for (var chip in chips) {
+      if (descriptions.containsKey(chip)) {
+        activePhrases.add(descriptions[chip]!);
+      }
+    }
+
+    //Costruisce la frase finale
+    String summary = "";
+    if (activePhrases.length == 1) {
+      summary = "Today${activePhrases[0]}.";
+    } else if (activePhrases.length == 2) {
+      summary = "Today${activePhrases[0]}, ${activePhrases[1]}.";
+    } else {
+      String primary = activePhrases.sublist(0, activePhrases.length - 1).join(", ");
+      String last = activePhrases.last;
+      summary = "Today$primary ;$last.";
+    }
+    //aggiunge consiglio finale 
+    String advice = "";
+    if (chips.contains('exam_stress')) {
+      advice = " Make sure to listen to your body and take breaks when needed."; 
+      } else {
+        advice = " Keep going! You're making progress, even if it doesn't always feel like it! :)";
+      }
+      return "$summary$advice";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -394,7 +436,7 @@ class _MoodScreenState extends State<MoodScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          "coming soon!",
+                          _getInsightText(_selectedChips, userProvider.chickName),
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,

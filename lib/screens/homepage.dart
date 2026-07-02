@@ -85,11 +85,50 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 24),
             _buildDateNavigator(),
             const SizedBox(height: 24),
-            _buildChickSection(userProvider),
+            //riquadro con il pulcino
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFF5D59B5).withOpacity(0.12),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF5D59B5).withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: _buildChickSection(userProvider),
+            ),
             const SizedBox(height: 20),
             _buildVitalityBar(),
-            const SizedBox(height: 28),
-            _buildGoalsSection(),
+            const SizedBox(height: 24),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFF5D59B5).withOpacity(0.12),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF5D59B5).withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: _buildGoalsSection(),
+            ),
             const SizedBox(height: 20),
           ],
         ),
@@ -393,7 +432,11 @@ class _HomePageState extends State<HomePage> {
                   //logout functionality 
                   final impact = Impact();
                   await impact.deleteTokens(); // Elimina i token salvati
-
+                  // Clear user data from UserProvider
+                  if (mounted) {
+                    await Provider.of<UserProvider>(context, listen: false).clearUserData();
+                  }
+                  // Navigate to the login page and remove all previous routes
                   if (!mounted) return;
                   Navigator.pushAndRemoveUntil(
                     context,
