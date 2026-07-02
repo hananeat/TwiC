@@ -29,7 +29,7 @@ class ProfileScreen extends StatelessWidget {
                     _profileTile(Icons.pets_rounded, 'Chick Name', user.chickName),
                     _profileTile(Icons.person, 'First Name', user.firstName),
                     _profileTile(Icons.person_outline, 'Last Name', user.lastName),
-                    _profileTile(Icons.diversity_1_rounded, 'Sex', user.sex),
+                    _profileTile(Icons.sentiment_satisfied_alt_rounded, 'Sex', user.sex),
                     _profileTile(Icons.cake, 'Age', '${user.age}'),
                     _profileTile(Icons.star, 'Stars', '${user.stars}'),
                   ],
