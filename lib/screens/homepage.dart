@@ -22,9 +22,26 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   //bottom bar navigation
   int _selectedIndex = 0;
-  //dati generali (saranno caricati dinamicamente in futuro)
-  final int _vitality = 68;
-  final int _vitalityMax = 100;
+  // Calcola la vitalità corrente basata sugli obiettivi caricati
+  double get _currentVitality {
+    if (_goals.isEmpty) return 0.0;
+    double total = 0.0;
+    for (var goal in _goals) {
+      final label = goal['label'] as String;
+      final progress = goal['progress'] as double;
+      if (label == 'Steps') {
+        total += progress * 30;
+      } else if (label == 'Sleep') {
+        total += progress * 30;
+      } else if (label == 'Exercise') {
+        total += progress * 30;
+      } else if (label == 'Mood') {
+        total += progress * 10;
+      }
+    }
+    return total;
+  }
+  
 
   DateTime _selectedDate = DateTime.now();
 
@@ -83,51 +100,58 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 20),
             _buildTopBar(userProvider),
             const SizedBox(height: 24),
-            _buildDateNavigator(),
+            Center(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 320),
+                child: _buildDateNavigator(userProvider),
+              ),
+            ),
             const SizedBox(height: 24),
             //riquadro con il pulcino
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: const Color(0xFF5D59B5).withOpacity(0.12),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF5D59B5).withOpacity(0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+            Center(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 320),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFF5D59B5).withOpacity(0.12),
+                    width: 1.5,
                   ),
-                ],
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF5D59B5).withOpacity(0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: _buildChickSection(userProvider),
               ),
-              child: _buildChickSection(userProvider),
             ),
-            const SizedBox(height: 20),
-            _buildVitalityBar(),
             const SizedBox(height: 24),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: const Color(0xFF5D59B5).withOpacity(0.12),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF5D59B5).withOpacity(0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+            Center(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 320),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFF5D59B5).withOpacity(0.12),
+                    width: 1.5,
                   ),
-                ],
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF5D59B5).withOpacity(0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: _buildGoalsSection(),
               ),
-              child: _buildGoalsSection(),
             ),
             const SizedBox(height: 20),
           ],
@@ -288,39 +312,93 @@ class _HomePageState extends State<HomePage> {
         'done': exercises >= exerciseTargetSessions,
       },
     ];
+
+    // Calcola e aggiorna la vitalità per la data selezionata nel provider
+    final double computedVitality = (reward.stepsProgress * 30) + 
+                                     (reward.sleepProgress * 30) + 
+                                     (exerciseProgress * 30) + 
+                                     (moodDoneToday ? 10.0 : 0.0);
+
+    final dateKey = "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+    
+    // Always trigger past XP check for the selected date to process growth dynamically
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      userProvider.checkAndProcessPastXP(currentDate: date);
+    });
+
+    // Claim goal rewards if completed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      userProvider.claimGoalRewards(
+        dateKey,
+        stepsDone: reward.stepsDone,
+        sleepDone: reward.sleepDone,
+        exerciseDone: exercises >= exerciseTargetSessions,
+        stepsPoints: reward.stepsPoints,
+        sleepPoints: reward.sleepPoints,
+        exercisePoints: 6,
+      );
+    });
+
+    if (userProvider.getDailyVitalityForDate(date) != computedVitality) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        userProvider.updateDailyVitality(dateKey, computedVitality);
+      });
+    }
   }
 
 
 // METHODS FOR BUILDING THE DASHBOARD CONTENT
 // Method 1: The _buildDateNavigator method builds the date navigator.  
-  Widget _buildDateNavigator() {
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  DateTime _parseDateStr(String dateStr) {
+    final parts = dateStr.split('-');
+    return DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+  }
+
+  // Method 1: The _buildDateNavigator method builds the date navigator.  
+  Widget _buildDateNavigator(UserProvider userProvider) {
     final formattedDate = DateFormat('E, d MMM yyyy').format(_selectedDate);
+
+    final firstAccessDate = userProvider.firstAccessDate.isNotEmpty 
+        ? _parseDateStr(userProvider.firstAccessDate) 
+        : DateTime.now();
+
+    final bool canGoBack = _selectedDate.isAfter(firstAccessDate) && !_isSameDay(_selectedDate, firstAccessDate);
+    
+    // We can always go forward in time infinitely
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         GestureDetector(
-          onTap: () {
+          onTap: canGoBack ? () {
             setState(() {
               _selectedDate = _selectedDate.subtract(const Duration(days: 1));
             });
             Provider.of<HealthDataProvider>(context, listen: false)
                 .fetchDataOfDay(_selectedDate);
-          },
+          } : null,
           child: Container(
             width: 44,
             height: 44,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: const Color(0xFF5D59B5).withOpacity(0.15),
+                color: canGoBack 
+                    ? const Color(0xFF5D59B5).withOpacity(0.15) 
+                    : const Color(0xFF5D59B5).withOpacity(0.05),
                 width: 1.5,
               ),
-              color: Colors.white,
+              color: canGoBack ? Colors.white : Colors.grey.withOpacity(0.05),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.chevron_left_rounded,
-              color: Color(0xFF5D59B5),
+              color: canGoBack 
+                  ? const Color(0xFF5D59B5) 
+                  : const Color(0xFF5D59B5).withOpacity(0.25),
             ),
           ),
         ),
@@ -476,53 +554,171 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  //Method 3: The _buildChickSection method builds the chick section.  
+  //Method 3: The _buildChickSection method builds the chick section with Integrated Vitality Bar.  
   Widget _buildChickSection(UserProvider userProvider) {
-    return Center(
-      child: Column(
-        children: [
-          Image.asset(
-            'assets/images/chick3.png',
-            width: 220,
-            height: 220,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            userProvider.chickName,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2A2859),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+    // Get historical state for the currently selected date
+    final historicalState = userProvider.getHistoricalStateForDate(_selectedDate);
+    final int currentLevel = historicalState['level'] as int;
+    final int currentXp = historicalState['xp'] as int;
+    final int currentOverflowXp = historicalState['overflowXp'] as int;
+    final double vitality = _currentVitality;
 
-  //Method 4: The _buildVitalityBar method builds the vitality bar.
-  //It takes the _vitality and _vitalityMax parameters to display the vitality progress.
-  Widget _buildVitalityBar() {
-    final double progress = _vitality / _vitalityMax;
+    String assetPath = 'assets/images/chick$currentLevel.png';
+    if (currentLevel == 6) {
+      if (vitality < 40) {
+        assetPath = 'assets/images/chick6_sad.png';
+      } else if (vitality >= 80) {
+        assetPath = 'assets/images/chick6_smile.png';
+      } else {
+        assetPath = 'assets/images/chick6.png';
+      }
+    }
+
+    int maxXp = 100;
+    if (currentLevel == 1) {
+      maxXp = 100;
+    } else if (currentLevel == 2) {
+      maxXp = 300;
+    } else if (currentLevel == 3) {
+      maxXp = 600;
+    } else if (currentLevel == 4) {
+      maxXp = 1000;
+    } else if (currentLevel == 5) {
+      maxXp = 1500;
+    }
+    
+    
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Centered Chick Information
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            FloatingAsset(
+              child: Image.asset(
+                assetPath,
+                width: 350,
+                height: 180,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(height: 1),
+            Text(
+              userProvider.chickName,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2A2859), // Dark Blue
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF5D59B5).withOpacity(0.08), // Light purple background
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'Level $currentLevel',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF5D59B5),
+                    ),
+                  ),
+                ),
+                Text(
+                  '  •  ',
+                  style: TextStyle(
+                    color: Colors.grey.withOpacity(0.6),
+                    fontSize: 16,
+                  ),
+                ),
+                if (currentLevel < 6)
+                  RichText(
+                    text: TextSpan(
+                      style: const TextStyle(fontSize: 13, color: Color(0xFF2A2859)),
+                      children: [
+                        const TextSpan(
+                          text: 'Growth: ',
+                          style: TextStyle(
+                            color: Color(0xFF8B9E78), // Sage Green
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        TextSpan(
+                          text: '$currentXp / $maxXp XP',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  RichText(
+                    text: TextSpan(
+                      style: const TextStyle(fontSize: 13, color: Color(0xFF2A2859)),
+                      children: [
+                        const TextSpan(
+                          text: 'Next Star: ',
+                          style: TextStyle(
+                            color: Color(0xFF8B9E78), // Sage Green
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        TextSpan(
+                          text: '$currentOverflowXp / 200 XP',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+        
+        const SizedBox(height: 12),
+        
+        // Vitality Section
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'VITALITY',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.1,
+                color: Color(0xFF8B9E78), // Sage Green
+              ),
+            ),
+            Text(
+              '${vitality.round()} / 100',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2A2859), // Dark Blue
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: LinearProgressIndicator(
-            value: progress,
-            minHeight: 12,
-            backgroundColor: Colors.grey.withOpacity(0.15),
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF5D59B5)),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Vitality: $_vitality/$_vitalityMax',
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF5D59B5),
+            value: (vitality / 100).clamp(0.0, 1.0),
+            minHeight: 10,
+            backgroundColor: const Color(0xFF5D59B5).withOpacity(0.08), // Light purple bg
+            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF5D59B5)), // Purple progress
           ),
         ),
       ],
@@ -636,6 +832,57 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// Widget for the gentle up-and-down floating/breathing animation of the chick
+class FloatingAsset extends StatefulWidget {
+  final Widget child;
+  const FloatingAsset({super.key, required this.child});
+
+  @override
+  State<FloatingAsset> createState() => _FloatingAssetState();
+}
+
+class _FloatingAssetState extends State<FloatingAsset> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    
+    // Smooth transition from -6.0 to +6.0 pixels vertical offset
+    _animation = Tween<double>(begin: -6.0, end: 6.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, _animation.value),
+          child: child,
+        );
+      },
+      child: widget.child,
     );
   }
 } 

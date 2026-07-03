@@ -12,6 +12,12 @@ class UserProvider extends ChangeNotifier {
   late String _sex;
   late int _age;
   int _stars = 0;
+  int _chickXp = 0;
+  int _chickLevel = 1;
+  int _overflowXp = 0;
+  String _lastXpUpdateDate = '';
+  String _firstAccessDate = '';
+  final Map<String, double> _dailyVitalityMap = {};
   
   // Date-specific mood check-in data (keyed by yyyy-MM-dd)
   final Map<String, bool> _moodDoneMap = {};
@@ -62,6 +68,15 @@ class UserProvider extends ChangeNotifier {
   String get sex => _sex;
   int get age => _age;
   int get stars => _stars;
+  int get chickXp => _chickXp;
+  int get chickLevel => _chickLevel;
+  int get overflowXp => _overflowXp;
+  String get lastXpUpdateDate => _lastXpUpdateDate;
+  String get firstAccessDate => _firstAccessDate;
+  
+  double getDailyVitalityForDate(DateTime date) {
+    return _dailyVitalityMap[_dateKey(date)] ?? 0.0;
+  }
   
   // Default to today's values for backward compatibility
   bool get moodDone => isMoodDoneForDate(DateTime.now());
@@ -102,6 +117,15 @@ class UserProvider extends ChangeNotifier {
         }
         
         _stars = sp.getInt('stars') ?? 0;
+        _chickXp = sp.getInt('chick_xp') ?? 0;
+        _chickLevel = sp.getInt('chick_level') ?? 1;
+        _overflowXp = sp.getInt('overflow_xp') ?? 0;
+        _lastXpUpdateDate = sp.getString('last_xp_update_date') ?? '';
+        _firstAccessDate = sp.getString('first_access_date') ?? '';
+        if (_firstAccessDate.isEmpty) {
+          _firstAccessDate = _dateKey(DateTime.now());
+          await sp.setString('first_access_date', _firstAccessDate);
+        }
         
         // Load date-specific keys
         final keys = sp.getKeys();
@@ -115,6 +139,9 @@ class UserProvider extends ChangeNotifier {
           } else if (key.startsWith('saved_chips_')) {
             final dateStr = key.substring('saved_chips_'.length);
             _savedChipsMap[dateStr] = sp.getStringList(key) ?? [];
+          } else if (key.startsWith('vitality_')) {
+            final dateStr = key.substring('vitality_'.length);
+            _dailyVitalityMap[dateStr] = sp.getDouble(key) ?? 0.0;
           }
         }
 
@@ -134,6 +161,8 @@ class UserProvider extends ChangeNotifier {
         }
         
         _isDataLoaded = true;
+        // Check and process past XP once data is loaded
+        await checkAndProcessPastXP();
       }
 
     // Catch the error if something goes wrong
@@ -227,6 +256,290 @@ class UserProvider extends ChangeNotifier {
     return coinsAdded;
   }
 
+  // Method to update and save the daily vitality score for a given day
+  Future<void> updateDailyVitality(String dateKey, double vitality) async {
+    // Only update if the value has changed
+    if (_dailyVitalityMap[dateKey] == vitality) return;
+
+    _dailyVitalityMap[dateKey] = vitality;
+    
+    try {
+      final sp = await SharedPreferences.getInstance();
+      await sp.setDouble('vitality_$dateKey', vitality);
+    } catch (e) {
+      debugPrint('Error saving daily vitality in UserProvider: $e');
+    }
+    
+    // Parse the date from dateKey to use as reference
+    DateTime? refDate;
+    try {
+      final parts = dateKey.split('-');
+      refDate = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+    } catch (_) {}
+    
+    // Automatically trigger calculation of past XP
+    await checkAndProcessPastXP(currentDate: refDate);
+    
+    notifyListeners();
+  }
+
+  // Scans past days and processes their vitality into XP/Coins
+  Future<void> checkAndProcessPastXP({DateTime? currentDate}) async {
+    if (_isLoading) return;
+    
+    final today = DateTime.now();
+    final rawReferenceDate = currentDate ?? today;
+    
+    // Normalize referenceDate to midnight to prevent timezone/hour differences from prematurely finalizing today's XP
+    final referenceDate = DateTime(rawReferenceDate.year, rawReferenceDate.month, rawReferenceDate.day);
+    
+    // If lastXpUpdateDate is empty, initialize it to yesterday so we start tracking from today onwards
+    if (_lastXpUpdateDate.isEmpty) {
+      final yesterday = referenceDate.subtract(const Duration(days: 1));
+      _lastXpUpdateDate = _dateKey(yesterday);
+      
+      try {
+        final sp = await SharedPreferences.getInstance();
+        await sp.setString('last_xp_update_date', _lastXpUpdateDate);
+      } catch (e) {
+        debugPrint('Error setting initial last_xp_update_date: $e');
+      }
+      return;
+    }
+    
+    DateTime lastDate;
+    try {
+      final parts = _lastXpUpdateDate.split('-');
+      lastDate = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+    } catch (e) {
+      debugPrint('Error parsing last XP update date: $e');
+      lastDate = referenceDate.subtract(const Duration(days: 1));
+    }
+    
+    debugPrint('[TwiC] checkAndProcessPastXP: referenceDate=$referenceDate, _lastXpUpdateDate=$_lastXpUpdateDate, lastDate=$lastDate');
+    
+    
+    // Loop through all days from lastDate + 1 up to yesterday (inclusive) relative to referenceDate
+    DateTime processDate = lastDate.add(const Duration(days: 1));
+    final yesterday = DateTime(referenceDate.year, referenceDate.month, referenceDate.day).subtract(const Duration(days: 1));
+    
+    bool updated = false;
+    try {
+      final sp = await SharedPreferences.getInstance();
+      
+      while (processDate.isBefore(referenceDate) || (processDate.year == yesterday.year && processDate.month == yesterday.month && processDate.day == yesterday.day)) {
+        final key = _dateKey(processDate);
+        
+        // Get the vitality of that day (default to 0.0 if they didn't log in)
+        final dayVitality = _dailyVitalityMap[key] ?? 0.0;
+        debugPrint('[TwiC] Loop: processDate=$processDate, key=$key, dayVitality=$dayVitality');
+        
+        // Process XP for this day
+        await _addXPPoints(dayVitality.round(), sp);
+        
+        _lastXpUpdateDate = key;
+        await sp.setString('last_xp_update_date', _lastXpUpdateDate);
+        updated = true;
+        
+        processDate = processDate.add(const Duration(days: 1));
+      }
+    } catch (e) {
+      debugPrint('Error processing past XP: $e');
+    }
+    
+    if (updated) {
+      notifyListeners();
+    }
+  }
+  
+  // Adds XP points and handles level ups or coin conversions
+  Future<void> _addXPPoints(int points, SharedPreferences sp) async {
+    if (points <= 0) return;
+    
+    if (_chickLevel < 6) {
+      _chickXp += points;
+      
+      // Level thresholds:
+      // Lvl 1: 0 - 100 XP
+      // Lvl 2: 101 - 300 XP
+      // Lvl 3: 301 - 600 XP
+      // Lvl 4: 601 - 1000 XP
+      // Lvl 5: 1001 - 1500 XP
+      // Lvl 6: 1501+ XP
+      int newLevel = 1;
+      if (_chickXp <= 100) {
+        newLevel = 1;
+      } else if (_chickXp <= 300) {
+        newLevel = 2;
+      } else if (_chickXp <= 600) {
+        newLevel = 3;
+      } else if (_chickXp <= 1000) {
+        newLevel = 4;
+      } else if (_chickXp <= 1500) {
+        newLevel = 5;
+      } else {
+        newLevel = 6;
+      }
+      
+      if (newLevel > _chickLevel) {
+        _chickLevel = newLevel;
+        await sp.setInt('chick_level', _chickLevel);
+      }
+      await sp.setInt('chick_xp', _chickXp);
+    } else {
+      // Level 6 (Adult): convert every 200 XP to 1 star (coin)
+      _overflowXp += points;
+      if (_overflowXp >= 200) {
+        final extraStars = _overflowXp ~/ 200;
+        _stars += extraStars;
+        _overflowXp = _overflowXp % 200;
+        
+        await sp.setInt('stars', _stars);
+      }
+      await sp.setInt('overflow_xp', _overflowXp);
+    }
+  }
+
+  // Calculates the historical XP, level, and overflow XP of the chick for a given selected date
+  Map<String, dynamic> getHistoricalStateForDate(DateTime targetDate) {
+    // Normalize targetDate to midnight
+    final targetMidnight = DateTime(targetDate.year, targetDate.month, targetDate.day);
+    
+    int level = 1;
+    int xp = 0;
+    int overflowXp = 0;
+    
+    if (_firstAccessDate.isEmpty) {
+      return {'level': level, 'xp': xp, 'overflowXp': overflowXp};
+    }
+    
+    // Parse first access date
+    DateTime firstDate;
+    try {
+      final parts = _firstAccessDate.split('-');
+      firstDate = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+    } catch (_) {
+      return {'level': level, 'xp': xp, 'overflowXp': overflowXp};
+    }
+    
+    debugPrint('[TwiC] getHistoricalStateForDate: targetMidnight=$targetMidnight, _firstAccessDate=$_firstAccessDate, firstDate=$firstDate');
+    
+    // If firstDate is after targetMidnight, auto-adjust firstAccessDate to targetMidnight
+    if (firstDate.isAfter(targetMidnight)) {
+      firstDate = targetMidnight;
+      _firstAccessDate = _dateKey(targetMidnight);
+      SharedPreferences.getInstance().then((sp) {
+        sp.setString('first_access_date', _firstAccessDate);
+      });
+    }
+
+    // Self-correct firstDate if there are earlier records in the daily vitality map (e.g. from past system clock shifts)
+    DateTime earliestRecorded = firstDate;
+    for (final key in _dailyVitalityMap.keys) {
+      try {
+        final parts = key.split('-');
+        final date = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+        if (date.isBefore(earliestRecorded)) {
+          earliestRecorded = date;
+        }
+      } catch (_) {}
+    }
+    
+    if (earliestRecorded.isBefore(firstDate)) {
+      firstDate = earliestRecorded;
+      _firstAccessDate = _dateKey(firstDate);
+      SharedPreferences.getInstance().then((sp) {
+        sp.setString('first_access_date', _firstAccessDate);
+      });
+    }
+    
+    // Loop through all days from firstDate up to targetMidnight (inclusive)
+    DateTime processDate = firstDate;
+    
+    while (processDate.isBefore(targetMidnight) || processDate.isAtSameMomentAs(targetMidnight)) {
+      final key = _dateKey(processDate);
+      final dayVitality = _dailyVitalityMap[key] ?? 0.0;
+      final points = dayVitality.round();
+      debugPrint('[TwiC] HistLoop: processDate=$processDate, key=$key, dayVitality=$dayVitality, points=$points');
+      
+      if (points > 0) {
+        if (level < 6) {
+          xp += points;
+          if (xp <= 100) {
+            level = 1;
+          } else if (xp <= 300) {
+            level = 2;
+          } else if (xp <= 600) {
+            level = 3;
+          } else if (xp <= 1000) {
+            level = 4;
+          } else if (xp <= 1500) {
+            level = 5;
+          } else {
+            level = 6;
+          }
+        } else {
+          overflowXp += points;
+          if (overflowXp >= 200) {
+            overflowXp = overflowXp % 200;
+          }
+        }
+      }
+      
+      processDate = processDate.add(const Duration(days: 1));
+    }
+    
+    return {'level': level, 'xp': xp, 'overflowXp': overflowXp};
+  }
+
+  // Claim goal rewards and save the claimed flags directly to SharedPreferences
+  Future<void> claimGoalRewards(
+    String dateKey, {
+    required bool stepsDone,
+    required bool sleepDone,
+    required bool exerciseDone,
+    required int stepsPoints,
+    required int sleepPoints,
+    required int exercisePoints,
+  }) async {
+    if (_isLoading) return;
+
+    final sp = await SharedPreferences.getInstance();
+    bool updated = false;
+
+    if (stepsDone) {
+      final key = 'goal_claimed_${dateKey}_steps';
+      if (!(sp.getBool(key) ?? false)) {
+        _stars += stepsPoints;
+        await sp.setBool(key, true);
+        updated = true;
+      }
+    }
+
+    if (sleepDone) {
+      final key = 'goal_claimed_${dateKey}_sleep';
+      if (!(sp.getBool(key) ?? false)) {
+        _stars += sleepPoints;
+        await sp.setBool(key, true);
+        updated = true;
+      }
+    }
+
+    if (exerciseDone) {
+      final key = 'goal_claimed_${dateKey}_exercise';
+      if (!(sp.getBool(key) ?? false)) {
+        _stars += exercisePoints;
+        await sp.setBool(key, true);
+        updated = true;
+      }
+    }
+
+    if (updated) {
+      await sp.setInt('stars', _stars);
+      notifyListeners();
+    }
+  }
+
   // Method to reset the user's data with logout
   Future<void> clearUserData() async {
     // Reset all user data to default values
@@ -236,6 +549,13 @@ class UserProvider extends ChangeNotifier {
     _sex = 'Female';
     _age = 0;
     _stars = 0;
+    _chickXp = 0;
+    _chickLevel = 1;
+    _overflowXp = 0;
+    _lastXpUpdateDate = '';
+    _firstAccessDate = '';
+    _dailyVitalityMap.clear();
+    
     // Clear all date-specific mood check-in data
     _savedMoodMap.clear();
     _savedChipsMap.clear();
