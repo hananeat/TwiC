@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:TwiC/utils/impact.dart';
 import 'onboarding_screen.dart';
+import 'homepage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lottie/lottie.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
 
 // StatefulWidget perché la pagina deve "reagire" 
 // quando l'utente scrive nei campi o preme il bottone
@@ -68,11 +72,31 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
 
       if (statusCode == 200) {
-        // Successo: naviga alla schermata successiva
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const OnboardingScreen()),
-        );
+        // Legge se l'onboarding è già stato fatto in precedenza
+        final sp = await SharedPreferences.getInstance();
+        final chickName = sp.getString('chickName');
+        final hasChickName = chickName != null && chickName.isNotEmpty;
+
+        if (!mounted) return;
+
+        // Ricarica tutti i dati di gioco e il profilo utente in memoria
+        await Provider.of<UserProvider>(context, listen: false).loadUserData();
+
+        if (!mounted) return;
+
+        if (hasChickName) {
+          // Successo e onboarding già fatto: naviga alla HomePage
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        } else {
+          // Successo ma onboarding da fare: naviga a Onboarding
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const OnboardingScreen()),
+          );
+        }
       } else {
         // Errore credenziali 
         ScaffoldMessenger.of(context).showSnackBar(

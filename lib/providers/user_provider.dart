@@ -567,8 +567,9 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final sp = await SharedPreferences.getInstance();
-      await sp.clear(); // Clear all data from SharedPreferences
+      // Non cancelliamo l'intero database locale (SharedPreferences) al logout
+      // per preservare il nome del pulcino e i progressi di gioco dell'utente.
+      // I token di sessione vengono già rimossi separatamente tramite deleteTokens().
     } catch (e) {
       debugPrint('Error clearing user data in UserProvider: $e');
     }

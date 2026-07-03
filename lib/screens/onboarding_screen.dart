@@ -160,6 +160,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                 Expanded(
                   child: PageView(
                     controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(), // Disabilita lo swipe manuale tra le pagine per impedire di saltare la validazione
                     onPageChanged: (index) {
                       setState(() {
                         _currentPage = index;
@@ -184,6 +185,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
               ],
             ),
           ),
+          // Pulsante Back in alto a sinistra per poter tornare indietro ma in modo controllato
+          if (_currentPage > 0)
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, color: primaryGreen, size: 28),
+                  onPressed: () {
+                    _pageController.previousPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                    );
+                  },
+                ),
+              ),
+            ),
         ],
       ),
     );
