@@ -661,25 +661,82 @@ class _HomePageState extends State<HomePage> {
                     ),
                   )
                 else
-                  RichText(
-                    text: TextSpan(
-                      style: const TextStyle(fontSize: 13, color: Color(0xFF2A2859)),
-                      children: [
-                        const TextSpan(
-                          text: 'Next Star: ',
-                          style: TextStyle(
-                            color: Color(0xFF8B9E78), // Sage Green
-                            fontWeight: FontWeight.w500,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      RichText(
+                        text: TextSpan(
+                          style: const TextStyle(fontSize: 13, color: Color(0xFF2A2859)),
+                          children: [
+                            const TextSpan(
+                              text: 'Next Star: ',
+                              style: TextStyle(
+                                color: Color(0xFF8B9E78), // Sage Green
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            TextSpan(
+                              text: '$currentOverflowXp / 200 XP',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              backgroundColor: const Color(0xFFFFFDE7),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              content: const Text(
+                                'Your chick is fully grown!\n\n'
+                                'From now on, your daily Vitality points '
+                                'keep accumulating as XP.\n\n'
+                                'Every 200 XP you earn is automatically '
+                                'converted into 1 ⭐ Star that you can '
+                                'spend in the Shop.',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  height: 1.5,
+                                  color: Color(0xFF2A2859),
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text(
+                                    'Got it!',
+                                    style: TextStyle(
+                                      color: Color(0xFF5D59B5),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xFF5D59B5).withOpacity(0.1),
+                          ),
+                          child: const Icon(
+                            Icons.info_outline_rounded,
+                            size: 14,
+                            color: Color(0xFF5D59B5),
                           ),
                         ),
-                        TextSpan(
-                          text: '$currentOverflowXp / 200 XP',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
               ],
             ),
