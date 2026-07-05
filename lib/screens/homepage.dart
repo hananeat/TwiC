@@ -12,6 +12,24 @@ import 'login.dart';
 import '../utils/impact.dart';
 import '../utils/goal_calculation.dart';
 
+const _backgroundAssets = {
+  'habitat_0': 'assets/images/grassland.png',
+  'habitat_1': 'assets/images/desert.png',
+  'habitat_2': 'assets/images/forest.png',
+  'habitat_3': 'assets/images/beach.png',
+};
+
+const _accessoryAssets = {
+  'accessory_1': 'assets/images/summer_hat.png',
+  'accessory_2': 'assets/images/sunglasses.png',
+};
+
+const _colorAssets = {
+  'color_1': 'chick6_red.png',
+  'color_2': 'chick6_blu.png',
+  'color_3': 'chick6_green.png',
+};
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -563,16 +581,25 @@ class _HomePageState extends State<HomePage> {
     final int currentOverflowXp = historicalState['overflowXp'] as int;
     final double vitality = _currentVitality;
 
+    // Colore equipaggiato (solo livello 6)
+    final String? equippedColor = userProvider.equippedColor;
     String assetPath = 'assets/images/chick$currentLevel.png';
+
     if (currentLevel == 6) {
-      if (vitality < 40) {
-        assetPath = 'assets/images/chick6_sad.png';
-      } else if (vitality >= 80) {
-        assetPath = 'assets/images/chick6_smile.png';
-      } else {
-        assetPath = 'assets/images/chick6.png';
-      }
+       if (equippedColor != null && _colorAssets.containsKey(equippedColor)) {
+      // Versione colorata: non ha varianti sad/smile
+         assetPath = 'assets/images/${_colorAssets[equippedColor]!}';
+  } else {
+    // Giallo default: usa varianti vitality
+    if (vitality < 40) {
+      assetPath = 'assets/images/chick6_sad.png';
+    } else if (vitality >= 80) {
+      assetPath = 'assets/images/chick6_smile.png';
+    } else {
+      assetPath = 'assets/images/chick6.png';
     }
+  }
+}
 
     int maxXp = 100;
     if (currentLevel == 1) {
@@ -596,14 +623,57 @@ class _HomePageState extends State<HomePage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            FloatingAsset(
-              child: Image.asset(
-                assetPath,
-                width: 350,
+            SizedBox(
+                width: 350, 
                 height: 180,
-                fit: BoxFit.cover,
-              ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                  // Piano 1 — Sfondo (habitat)
+                    Positioned.fill(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          _backgroundAssets[userProvider.equippedBackground] ??
+                               'assets/images/grassland.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    // Piano 2 — Pulcino
+                    Positioned(
+                      top: 0,
+                      left: 75,
+                      right: 75, //centrato
+                     child: FloatingAsset(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Image.asset(
+                            assetPath,
+                            width: 400,
+                            height: 270,
+                            fit: BoxFit.contain,
+                          ),
+                          // Piano 3 — Accessorio (se presente)
+                          if (userProvider.equippedAccessory != null &&
+                              _accessoryAssets.containsKey(userProvider.equippedAccessory))
+                            Positioned(
+                              bottom: _accessoryOffset(userProvider.equippedAccessory).dy,
+                              child: Image.asset(
+                                _accessoryAssets[userProvider.equippedAccessory]!,
+                                width: _accessoryOffset(userProvider.equippedAccessory).dx,
+                                fit: BoxFit.contain,
+                              ),
+                            )
+                        ],
+                      ),
+                     ),
+                    ),
+                  ],
+                ),  
             ),
+          
             const SizedBox(height: 1),
             Text(
               userProvider.chickName,
@@ -781,6 +851,19 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
+
+// Restituisce (width, bottom) per ogni accessorio
+// dx = larghezza immagine, dy = offset dal basso
+Offset _accessoryOffset(String? accessoryId) {
+  switch (accessoryId) {
+    case 'accessory_2': // Sunglasses
+      return const Offset(90, 120);  
+    case 'accessory_1': // Summer Hat
+      return const Offset(80, 130); 
+    default:
+      return const Offset(90, 68);
+  }
+}
 
 //Method 5: The _buildGoalsSection method builds the goals section.
   Widget _buildGoalsSection() {

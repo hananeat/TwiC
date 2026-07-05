@@ -17,6 +17,10 @@ class UserProvider extends ChangeNotifier {
   int _overflowXp = 0;
   String _lastXpUpdateDate = '';
   String _firstAccessDate = '';
+  String _equippedBackground = 'habitat_0';
+  String? _equippedAccessory;
+  String? _equippedColor;
+  Set<String> _ownedItems = {'habitat_0', 'color_0'};
   final Map<String, double> _dailyVitalityMap = {};
   
   // Date-specific mood check-in data (keyed by yyyy-MM-dd)
@@ -73,6 +77,10 @@ class UserProvider extends ChangeNotifier {
   int get overflowXp => _overflowXp;
   String get lastXpUpdateDate => _lastXpUpdateDate;
   String get firstAccessDate => _firstAccessDate;
+  String get equippedBackground => _equippedBackground;
+  String? get equippedAccessory => _equippedAccessory;
+  String? get equippedColor => _equippedColor;
+  Set<String> get ownedItems => Set.unmodifiable(_ownedItems);
   
   double getDailyVitalityForDate(DateTime date) {
     return _dailyVitalityMap[_dateKey(date)] ?? 0.0;
@@ -122,6 +130,15 @@ class UserProvider extends ChangeNotifier {
         _overflowXp = sp.getInt('overflow_xp') ?? 0;
         _lastXpUpdateDate = sp.getString('last_xp_update_date') ?? '';
         _firstAccessDate = sp.getString('first_access_date') ?? '';
+        _equippedBackground = sp.getString('equipped_background') ?? 'habitat_0';
+        _equippedAccessory = sp.getString('equipped_accessory');
+        _equippedColor = sp.getString('equipped_color');
+        final savedOwned = sp.getStringList('owned_items');
+        if (savedOwned != null) {
+          _ownedItems = {...savedOwned, 'habitat_0', 'color_0'}; // i default sono sempre sbloccati
+        } else {
+          _ownedItems = {'habitat_0', 'color_0'};
+        }
         if (_firstAccessDate.isEmpty) {
           _firstAccessDate = _dateKey(DateTime.now());
           await sp.setString('first_access_date', _firstAccessDate);
@@ -576,4 +593,45 @@ class UserProvider extends ChangeNotifier {
       debugPrint('Error clearing user data in UserProvider: $e');
     }
   }
+
+// Method to buy an item with stars 
+
+Future<void> buyItem(String itemId, int price) async {
+  if (_stars < price) return;
+  _stars -= price;
+  _ownedItems.add(itemId);
+  final sp = await SharedPreferences.getInstance();
+  await sp.setInt('stars', _stars);
+  await sp.setStringList('owned_items', _ownedItems.toList());
+  notifyListeners();
+}
+
+Future<void> equipBackground(String itemId) async {
+  _equippedBackground = itemId;
+  final sp = await SharedPreferences.getInstance();
+  await sp.setString('equipped_background', itemId);
+  notifyListeners();
+}
+
+Future<void> equipAccessory(String? itemId) async {
+  _equippedAccessory = itemId;
+  final sp = await SharedPreferences.getInstance();
+  if (itemId != null) {
+    await sp.setString('equipped_accessory', itemId);
+  } else {
+    await sp.remove('equipped_accessory');
+  }
+  notifyListeners();
+}
+
+Future<void> equipColor(String? itemId) async {
+  _equippedColor = itemId == 'color_0' ? null : itemId;
+  final sp = await SharedPreferences.getInstance();
+  if (_equippedColor != null) {
+    await sp.setString('equipped_color', _equippedColor!);
+  } else {
+    await sp.remove('equipped_color');
+  }
+  notifyListeners();
+}
 }
