@@ -96,9 +96,9 @@ class _ShopScreenState extends State<ShopScreen> {
                     const SizedBox(height: 20),
                     _buildTabs(),
                     const SizedBox(height: 24),
-                    _buildGrid(coins),
+                    _buildGrid(coins, userProvider),
                     const SizedBox(height: 12),
-                    _buildStatusBar(coins),
+                    _buildActionBar(coins, userProvider),
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -216,7 +216,7 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   //griglia oggetti
-  Widget _buildGrid(int coins) {
+  Widget _buildGrid(int coins, UserProvider userProvider) {
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -224,14 +224,15 @@ class _ShopScreenState extends State<ShopScreen> {
       crossAxisSpacing: 14,
       mainAxisSpacing: 14,
       childAspectRatio: 1.1,
-      children: _items.map((item) => _buildItemCard(item, coins)).toList(),
+      children: _items.map((item) => _buildItemCard(item, coins, userProvider)).toList(),
     );
   }
 
   //per ogni oggetto, mostra nome, icona, prezzo e stato (acquistato/non)
-  Widget _buildItemCard(ShopItem item, int coins) {
+  Widget _buildItemCard(ShopItem item, int coins, UserProvider userProvider) {
     final bool isSelected = _selectedItem?.id == item.id;
-    final bool locked = !item.owned && item.price > coins;
+    final bool isOwned = item.owned || userProvider.ownedItems.contains(item.id);
+    final bool locked = !isOwned && item.price > coins;
  
     return GestureDetector(
       onTap: () => setState(() => _selectedItem = item),
@@ -264,7 +265,16 @@ class _ShopScreenState extends State<ShopScreen> {
                 ),
               ),
               const SizedBox(height: 3),
-              if (item.owned)
+              if (_currentCategory == ShopCategory.colors && !isOwned)
+                const Text(
+                  '🔒 Coming Soon',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.grey,
+                  ),
+                )
+              else if (isOwned)
                 const Text(
                   '✓ Unlocked',
                   style: TextStyle(
@@ -298,27 +308,123 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   //compare stato dell'oggetto selezionato 
-  Widget _buildStatusBar(int coins) {
-    final bool positive = _statusIsPositive(coins);
+  Widget _buildActionBar(int coins, UserProvider userProvider) {
+  final item = _selectedItem;
+  if (_currentCategory == ShopCategory.colors && _selectedItem != null && !(_selectedItem!.owned || 
+  userProvider.ownedItems.contains(_selectedItem!.id))) {
+    return _actionContainer(
+      color: Colors.grey.withOpacity(0.1),
+      child: const Text(
+        '🔒 Coming Soon',
+        textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.grey),
+      ),
+    );
+  }
+  
+  if (item == null) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: positive ? AppColors.green.withOpacity(0.1) : Colors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)],
+      ),
+      child: const Text(
+        'Select an item to see details',
+        textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textDark),
+      ),
+    );
+  }
+  final bool isOwned = item.owned || userProvider.ownedItems.contains(item.id);
+  // Determina se è equipaggiato
+  bool isEquipped = false;
+  if (_currentCategory == ShopCategory.habitat) {
+    isEquipped = userProvider.equippedBackground == item.id;
+  } else if (_currentCategory == ShopCategory.accessories) {
+    isEquipped = userProvider.equippedAccessory == item.id;
+  } else if (_currentCategory == ShopCategory.colors) {
+    final effectiveColor = userProvider.equippedColor ?? 'color_0';
+    isEquipped = effectiveColor == item.id;
+  }
+  if (isEquipped) {
+    return _actionContainer(
+      color: AppColors.green.withOpacity(0.12),
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.check_circle_rounded, color: AppColors.green, size: 18),
+          SizedBox(width: 8),
+          Text('Equipped', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.green)),
         ],
       ),
-      child: Text(
-        _statusMessage(coins),
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          color: positive ? AppColors.green : AppColors.textDark,
+    );
+  }
+  if (isOwned) {
+    return GestureDetector(
+      onTap: () {
+        if (_currentCategory == ShopCategory.habitat) {
+          userProvider.equipBackground(item.id);
+        } else if (_currentCategory == ShopCategory.accessories) {
+          userProvider.equipAccessory(item.id);
+        } else if (_currentCategory == ShopCategory.colors) {
+          userProvider.equipColor(item.id);
+        }
+        setState(() {});
+      },
+      child: _actionContainer(
+        color: const Color(0xFF5D59B5).withOpacity(0.1),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.checkroom_rounded, color: Color(0xFF5D59B5), size: 18),
+            SizedBox(width: 8),
+            Text('Equip', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF5D59B5))),
+          ],
         ),
       ),
     );
   }
+  if (item.price <= coins) {
+    return GestureDetector(
+      onTap: () async {
+        await userProvider.buyItem(item.id, item.price);
+        setState(() {});
+      },
+      child: _actionContainer(
+        color: AppColors.yellow.withOpacity(0.2),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('⭐', style: TextStyle(fontSize: 16)),
+            const SizedBox(width: 6),
+            Text('Buy for ${item.price}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+          ],
+        ),
+      ),
+    );
+  }
+  return _actionContainer(
+    color: Colors.white,
+    child: Text(
+      'Need ${item.price - coins} more ⭐ to buy ${item.name}',
+      textAlign: TextAlign.center,
+      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey),
+    ),
+  );
+}
+Widget _actionContainer({required Color color, required Widget child}) {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    decoration: BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)],
+    ),
+    child: child,
+  );
+}
 }
