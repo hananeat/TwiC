@@ -456,11 +456,13 @@ class UserProvider extends ChangeNotifier {
     // Loop through all days from firstDate up to targetMidnight (inclusive)
     DateTime processDate = firstDate;
     
-    while (processDate.isBefore(targetMidnight) || processDate.isAtSameMomentAs(targetMidnight)) {
+    // Only count days strictly before the target date:
+    // a day's vitality is converted to XP starting the next day.
+    while (processDate.isBefore(targetMidnight)) {
       final key = _dateKey(processDate);
       final dayVitality = _dailyVitalityMap[key] ?? 0.0;
       final points = dayVitality.round();
-      debugPrint('[TwiC] HistLoop: processDate=$processDate, key=$key, dayVitality=$dayVitality, points=$points');
+      debugPrint('HistLoop: processDate=$processDate, key=$key, dayVitality=$dayVitality, points=$points');
       
       if (points > 0) {
         if (level < 6) {
