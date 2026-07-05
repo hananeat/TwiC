@@ -586,11 +586,7 @@ class _HomePageState extends State<HomePage> {
     String assetPath = 'assets/images/chick$currentLevel.png';
 
     if (currentLevel == 6) {
-       if (equippedColor != null && _colorAssets.containsKey(equippedColor)) {
-      // Versione colorata: non ha varianti sad/smile
-         assetPath = 'assets/images/${_colorAssets[equippedColor]!}';
-  } else {
-    // Giallo default: usa varianti vitality
+    //Usa varianti vitality
     if (vitality < 40) {
       assetPath = 'assets/images/chick6_sad.png';
     } else if (vitality >= 80) {
@@ -598,7 +594,6 @@ class _HomePageState extends State<HomePage> {
     } else {
       assetPath = 'assets/images/chick6.png';
     }
-  }
 }
 
     int maxXp = 100;
@@ -642,17 +637,16 @@ class _HomePageState extends State<HomePage> {
                     ),
                     // Piano 2 — Pulcino
                     Positioned(
-                      top: 0,
-                      left: 75,
-                      right: 75, //centrato
+                      top: 35,
+                      left: 15,
+                      right: 15, //centrato
                      child: FloatingAsset(
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
                           Image.asset(
                             assetPath,
-                            width: 400,
-                            height: 270,
+                            width: 290,
                             fit: BoxFit.contain,
                           ),
                           // Piano 3 — Accessorio (se presente)
@@ -857,9 +851,9 @@ class _HomePageState extends State<HomePage> {
 Offset _accessoryOffset(String? accessoryId) {
   switch (accessoryId) {
     case 'accessory_2': // Sunglasses
-      return const Offset(90, 120);  
+      return const Offset(90, 70);  
     case 'accessory_1': // Summer Hat
-      return const Offset(80, 130); 
+      return const Offset(80, 100); 
     default:
       return const Offset(90, 68);
   }
