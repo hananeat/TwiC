@@ -350,14 +350,43 @@ class _ShopScreenState extends State<ShopScreen> {
     isEquipped = effectiveColor == item.id;
   }
   if (isEquipped) {
+    // Per gli item di default (habitat_0 e color_0) non ha senso fare unequip
+    final bool isDefault = item.id == 'habitat_0' || item.id == 'color_0';
     return _actionContainer(
       color: AppColors.green.withOpacity(0.12),
-      child: const Row(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.check_circle_rounded, color: AppColors.green, size: 18),
-          SizedBox(width: 8),
-          Text('Equipped', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.green)),
+          const Icon(Icons.check_circle_rounded, color: AppColors.green, size: 18),
+          const SizedBox(width: 8),
+          const Text('Equipped', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.green)),
+          if (!isDefault) ...[
+            const SizedBox(width: 16),
+            GestureDetector(
+              onTap: () {
+                if (_currentCategory == ShopCategory.accessories) {
+                  userProvider.equipAccessory(null);
+                } else if (_currentCategory == ShopCategory.colors) {
+                  userProvider.equipColor('color_0');
+                } else if (_currentCategory == ShopCategory.habitat) {
+                  userProvider.equipBackground('habitat_0');
+                }
+                setState(() {});
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.withOpacity(0.3)),
+                ),
+                child: const Text(
+                  'Unequip',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.red),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -375,13 +404,13 @@ class _ShopScreenState extends State<ShopScreen> {
         setState(() {});
       },
       child: _actionContainer(
-        color: const Color(0xFF5D59B5).withOpacity(0.1),
+        color: AppColors.purple.withOpacity(0.1),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.checkroom_rounded, color: Color(0xFF5D59B5), size: 18),
+            Icon(Icons.checkroom_rounded, color: AppColors.purple, size: 18),
             SizedBox(width: 8),
-            Text('Equip', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF5D59B5))),
+            Text('Equip', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.purple)),
           ],
         ),
       ),

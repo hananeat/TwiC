@@ -10,7 +10,7 @@ class UserProvider extends ChangeNotifier {
   late String _firstName;
   late String _lastName;
   late String _sex;
-  late int _age;
+  DateTime? _dateOfBirth;
   int _stars = 0;
   int _chickXp = 0;
   int _chickLevel = 1;
@@ -70,7 +70,17 @@ class UserProvider extends ChangeNotifier {
   String get firstName => _firstName;
   String get lastName => _lastName;
   String get sex => _sex;
-  int get age => _age;
+  DateTime? get dateOfBirth => _dateOfBirth;
+  int get age {
+    if (_dateOfBirth == null) return 18; // default fallback
+    final now = DateTime.now();
+    int years = now.year - _dateOfBirth!.year;
+    if (now.month < _dateOfBirth!.month ||
+        (now.month == _dateOfBirth!.month && now.day < _dateOfBirth!.day)) {
+      years--;
+    }
+    return years;
+  }
   int get stars => _stars;
   int get chickXp => _chickXp;
   int get chickLevel => _chickLevel;
@@ -121,7 +131,10 @@ class UserProvider extends ChangeNotifier {
           _firstName = fName;
           _lastName = sp.getString('lastName') ?? '';
           _sex = sp.getString('sex') ?? 'Female';
-          _age = sp.getInt('age') ?? 18;
+          final dobString = sp.getString('dateOfBirth');
+          if (dobString != null && dobString.isNotEmpty) {
+            _dateOfBirth = DateTime.tryParse(dobString);
+          }
         }
         
         _stars = sp.getInt('stars') ?? 0;
@@ -208,11 +221,11 @@ class UserProvider extends ChangeNotifier {
   }
 
   // Method to set and save user profile data
-  Future<void> setUserProfile(String firstName, String lastName, String sex, int age) async {
+  Future<void> setUserProfile(String firstName, String lastName, String sex, DateTime dateOfBirth) async {
     _firstName = firstName;
     _lastName = lastName;
     _sex = sex;
-    _age = age;
+    _dateOfBirth = dateOfBirth;
     notifyListeners();
 
     try {
@@ -220,7 +233,7 @@ class UserProvider extends ChangeNotifier {
       await sp.setString('firstName', _firstName);
       await sp.setString('lastName', _lastName);
       await sp.setString('sex', _sex);
-      await sp.setInt('age', _age);
+      await sp.setString('dateOfBirth', _dateOfBirth!.toIso8601String());
     } catch (e) {
       debugPrint('Error saving user profile in UserProvider: $e');
     }
@@ -566,7 +579,7 @@ class UserProvider extends ChangeNotifier {
     _firstName = '';
     _lastName = '';
     _sex = 'Female';
-    _age = 0;
+    _dateOfBirth = null;
     _stars = 0;
     _chickXp = 0;
     _chickLevel = 1;

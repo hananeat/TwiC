@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import '../utils/impact.dart';
 import '../providers/user_provider.dart';
+import 'package:TwiC/utils/app_colors.dart';
 
 class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
@@ -460,7 +461,7 @@ class _StatsScreenState extends State<StatsScreen> {
     final metrics = getMetrics(userProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFDE7),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -507,7 +508,7 @@ class _StatsScreenState extends State<StatsScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF5D59B5)),
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.purple),
           ),
           const SizedBox(height: 16),
           Text(
@@ -544,7 +545,7 @@ class _StatsScreenState extends State<StatsScreen> {
             ElevatedButton(
               onPressed: _fetchStatsData,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5D59B5),
+                backgroundColor: AppColors.purple,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
@@ -561,7 +562,7 @@ class _StatsScreenState extends State<StatsScreen> {
   Widget _buildDataState(Map<String, String> metrics) {
     return RefreshIndicator(
       onRefresh: _fetchStatsData,
-      color: const Color(0xFF5D59B5),
+      color: AppColors.purple,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(20),
@@ -610,7 +611,7 @@ class _StatsScreenState extends State<StatsScreen> {
               metrics['corrTitle']!,
               metrics['corrSub']!,
               const Color(0xFFF2EFFF),
-              const Color(0xFF5D59B5),
+              AppColors.purple,
             ),
             const SizedBox(height: 12),
             // Heart Rate Card
@@ -618,7 +619,7 @@ class _StatsScreenState extends State<StatsScreen> {
               metrics['freqTitle']!,
               metrics['freqSub']!,
               const Color(0xFFF2EFFF),
-              const Color(0xFF5D59B5),
+              AppColors.purple,
             ),
           ],
         ),
@@ -651,7 +652,7 @@ class _StatsScreenState extends State<StatsScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF2A2859),
+                color: AppColors.textDark,
               ),
             ),
           ],
@@ -706,7 +707,7 @@ class _StatsScreenState extends State<StatsScreen> {
           margin: const EdgeInsets.only(right: 8),
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFF5D59B5) : const Color(0xFFF7F6F2),
+            color: selected ? AppColors.purple : const Color(0xFFF7F6F2),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Center(

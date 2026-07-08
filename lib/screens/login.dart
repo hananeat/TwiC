@@ -7,6 +7,7 @@ import 'package:lottie/lottie.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
+import 'package:TwiC/utils/app_colors.dart';
 
 // StatefulWidget perché la pagina deve "reagire" 
 // quando l'utente scrive nei campi o preme il bottone
@@ -29,10 +30,7 @@ class _LoginPageState extends State<LoginPage> {
   // Questa variabile controlla se la password è visibile o nascosta
   bool _isPasswordVisible = false;
 
-  // I colori principali della nostra login page
-  static const Color primaryGreen = Color(0xFF4CAF50);  // verde
-  static const Color bgColor = Color(0xFFFFFDE7);       // sfondo giallo chiarissimo
-  static const Color textDark = Color(0xFF2A2859);      // testo scuro
+
 
   // Come nell'onboarding screen, dispose() libera la memoria
   // quando l'utente lascia questa schermata
@@ -121,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor, // sfondo giallo chiarissimo
+      backgroundColor: AppColors.background, // sfondo giallo chiarissimo
       body: SafeArea(
         // SafeArea evita che il contenuto finisca sotto
         // la "frangetta" o la barra in basso dell'iPhone
@@ -148,20 +146,20 @@ class _LoginPageState extends State<LoginPage> {
                             style: GoogleFonts.poppins(
                               fontSize: 34,
                               fontWeight: FontWeight.bold,
-                              color: primaryGreen,
+                              color: AppColors.green,
                               height: 1.25,
                             ),
                             children: const [
                               TextSpan(text: 'Move'),
                               TextSpan(
                                 text: ' your\nbody,\n',
-                                style: TextStyle(color: textDark),
+                                style: TextStyle(color: AppColors.textDark),
                               ),
                               TextSpan(text: 'calm ', 
-                                style: TextStyle(color: primaryGreen),
+                                style: TextStyle(color: AppColors.green),
                                 ),
                               TextSpan(text: 'your\nmind.', 
-                                style: TextStyle(color: textDark),
+                                style: TextStyle(color: AppColors.textDark),
                                 ), 
                             ],
                           ),
@@ -211,7 +209,7 @@ class _LoginPageState extends State<LoginPage> {
                   focusedBorder: OutlineInputBorder(
                     // focusedBorder = bordo quando il campo è selezionato
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: primaryGreen, width: 2),
+                    borderSide: const BorderSide(color: AppColors.green, width: 2),
                   ),
                 ),
               ),
@@ -236,7 +234,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: primaryGreen, width: 2),
+                    borderSide: const BorderSide(color: AppColors.green, width: 2),
                   ),
                   // suffixIcon = icona a DESTRA del campo
                   // permette di mostrare/nascondere la password
@@ -267,7 +265,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: ElevatedButton(
                   onPressed: _handleLogin, // chiama _handleLogin al tap
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryGreen, // sfondo verde
+                    backgroundColor: AppColors.green, // sfondo verde
                     foregroundColor: Colors.white, // testo bianco
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
@@ -297,7 +295,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: const Text(
                       'Registrati',
                       style: TextStyle(
-                        color: primaryGreen,
+                        color: AppColors.green,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

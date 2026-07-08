@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/user_provider.dart';
+import 'package:TwiC/utils/app_colors.dart';
 
 class MoodScreen extends StatefulWidget {
   final DateTime? date;
@@ -30,7 +31,7 @@ class _MoodScreenState extends State<MoodScreen> {
     {
       'id': 'tired',
       'label': 'Tired',
-      'color': const Color(0xFF5D59B5), // Purple
+      'color': AppColors.purple, // Purple
       'bgColor': const Color(0xFFEDE7F6),
     },
     {
@@ -135,7 +136,7 @@ class _MoodScreenState extends State<MoodScreen> {
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2A2859),
+                      color: AppColors.textDark,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -156,7 +157,7 @@ class _MoodScreenState extends State<MoodScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFFD158),
-                      foregroundColor: const Color(0xFF2A2859),
+                      foregroundColor: AppColors.textDark,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -227,10 +228,10 @@ class _MoodScreenState extends State<MoodScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        backgroundColor: Color(0xFFFFFDE7),
+        backgroundColor: AppColors.background,
         body: Center(
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.green),
           ),
         ),
       );
@@ -239,7 +240,7 @@ class _MoodScreenState extends State<MoodScreen> {
     return Consumer<UserProvider>(
       builder: (context, userProvider, child) {
         return Scaffold(
-          backgroundColor: const Color(0xFFFFFDE7),
+          backgroundColor: AppColors.background,
           body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -253,7 +254,7 @@ class _MoodScreenState extends State<MoodScreen> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2A2859),
+                      color: AppColors.textDark,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -261,14 +262,14 @@ class _MoodScreenState extends State<MoodScreen> {
                   // Date display
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today_rounded, size: 14, color: Color(0xFF5D59B5)),
+                      const Icon(Icons.calendar_today_rounded, size: 14, color: AppColors.purple),
                       const SizedBox(width: 6),
                       Text(
                         DateFormat('EEEE, d MMM yyyy').format(widget.date ?? DateTime.now()),
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF5D59B5),
+                          color: AppColors.purple,
                         ),
                       ),
                     ],
@@ -304,7 +305,7 @@ class _MoodScreenState extends State<MoodScreen> {
                             shape: BoxShape.circle,
                             border: isSelected
                                 ? Border.all(
-                                    color: const Color(0xFF4CAF50), // Green outline color (app branding)
+                                    color: AppColors.green, // Green outline color (app branding)
                                     width: 2.5,
                                   )
                                 : Border.all(
@@ -314,7 +315,7 @@ class _MoodScreenState extends State<MoodScreen> {
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                      color: const Color(0xFF4CAF50).withOpacity(0.2),
+                                      color: AppColors.green.withOpacity(0.2),
                                       blurRadius: 8,
                                       spreadRadius: 1,
                                     )
@@ -346,7 +347,7 @@ class _MoodScreenState extends State<MoodScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF2A2859),
+                      color: AppColors.textDark,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -456,12 +457,12 @@ class _MoodScreenState extends State<MoodScreen> {
                     child: OutlinedButton(
                       onPressed: _isSaving ? null : _saveCheckIn,
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF4CAF50), width: 1.5), // App green border
+                        side: const BorderSide(color: AppColors.green, width: 1.5), // App green border
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                         backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF2A2859),
+                        foregroundColor: AppColors.textDark,
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -473,14 +474,14 @@ class _MoodScreenState extends State<MoodScreen> {
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF2A2859),
+                              color: AppColors.textDark,
                             ),
                           ),
                           const SizedBox(width: 8),
                           const Icon(
                             Icons.north_east_rounded,
                             size: 18,
-                            color: Color(0xFF4CAF50), // Green arrow icon
+                            color: AppColors.green, // Green arrow icon
                           ),
                         ],
                       ),

@@ -4,6 +4,7 @@ import 'package:speech_balloon/speech_balloon.dart';
 import 'package:lottie/lottie.dart';
 import '../providers/user_provider.dart';
 import 'homepage.dart';
+import 'package:TwiC/utils/app_colors.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -26,7 +27,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
   // Controllers for the fourth page (profile setup)
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
+  DateTime? _selectedDateOfBirth;
   String _selectedSex = 'Female';
 
   late final AnimationController _lottieController1;
@@ -41,7 +42,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     // Listeners to update the active state of the button on Page 4
     _firstNameController.addListener(_onFormInputChanged);
     _lastNameController.addListener(_onFormInputChanged);
-    _ageController.addListener(_onFormInputChanged);
+
   }
 
   void _onFormInputChanged() {
@@ -51,13 +52,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
   bool get _isFormValid {
     return _firstNameController.text.trim().isNotEmpty &&
            _lastNameController.text.trim().isNotEmpty &&
-           _ageController.text.trim().isNotEmpty;
+           _selectedDateOfBirth != null;
   }
   
- // Colors for the onboarding screen
-  static const Color primaryGreen = Color(0xFF4CAF50);  // verde
-  static const Color bgColor = Color(0xFFFFFDE7);       // sfondo giallo chiarissimo
-  static const Color textDark = Color(0xFF2A2859);      // testo scuro
+
 
   @override
   void dispose() {
@@ -67,7 +65,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     _nameController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
-    _ageController.dispose();
     super.dispose();
   }
 
@@ -81,25 +78,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
       // Validate the form fields before proceeding
       final firstName = _firstNameController.text.trim();
       final lastName = _lastNameController.text.trim();
-      final ageText = _ageController.text.trim();
       // 1. Empty field check
-      if (firstName.isEmpty || lastName.isEmpty || ageText.isEmpty) {
+      if (firstName.isEmpty || lastName.isEmpty || _selectedDateOfBirth == null) {
         debugPrint('Empty fields found in onboarding.');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('All fields are required.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return; // Interrompe il metodo e non va avanti
-      }
-      // 2. Check if age is a valid number
-      final ageValue = int.tryParse(ageText);
-      if (ageValue == null) {
-        debugPrint('Age is not a number.');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Age must be a number.'),
             backgroundColor: Colors.red,
           ),
         );
@@ -118,7 +102,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
         _firstNameController.text.trim(),
         _lastNameController.text.trim(),
         _selectedSex,
-        ageValue,
+        _selectedDateOfBirth!,
       );
 
       if (mounted) {
@@ -139,7 +123,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
       height: 8.0,
       width: _currentPage == index ? 24.0 : 8.0,
       decoration: BoxDecoration(
-        color: _currentPage == index ? primaryGreen : primaryGreen.withOpacity(0.3),
+        color: _currentPage == index ? AppColors.green : AppColors.green.withOpacity(0.3),
         borderRadius: BorderRadius.circular(4.0),
       ),
     );
@@ -149,7 +133,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false, // To avoid errors when the keyboard opens
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.background,
       body: Stack(
         children: [
           // SafeArea Assicura che tutto quello che c'è al suo interno venga disegnato lontano 
@@ -191,7 +175,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
               child: Padding(
                 padding: const EdgeInsets.only(left: 16.0, top: 16.0),
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded, color: primaryGreen, size: 28),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.green, size: 28),
                   onPressed: () {
                     _pageController.previousPage(
                       duration: const Duration(milliseconds: 300),
@@ -242,7 +226,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 32,
-              color: textDark,
+              color: AppColors.textDark,
               fontFamily: 'serif', // Stile elegante simile all'immagine
               height: 1.2,
             ),
@@ -273,7 +257,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
           const SpeechBalloon(
             nipLocation: NipLocation.bottom,
             color: Colors.white,
-            borderColor: primaryGreen,
+            borderColor: AppColors.green,
             borderWidth: 3,
             borderRadius: 20,
             height: 55,
@@ -283,7 +267,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
               child: Center(
                 child: Text(
                   "Hi! What's my name?",
-                  style: TextStyle(color: primaryGreen, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: AppColors.green, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -315,7 +299,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
           const Text(
             'MEET YOUR CHICK',
             style: TextStyle(
-              color: primaryGreen,
+              color: AppColors.green,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.2,
               fontSize: 12,
@@ -327,7 +311,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 32,
-              color: textDark,
+              color: AppColors.textDark,
               fontFamily: 'serif',
             ),
           ),
@@ -362,13 +346,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                   decoration: BoxDecoration(
-                    color: isSelected ? primaryGreen.withOpacity(0.3) : primaryGreen.withOpacity(0.15),
+                    color: isSelected ? AppColors.green.withOpacity(0.3) : AppColors.green.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     name,
                     style: TextStyle(
-                      color: textDark,
+                      color: AppColors.textDark,
                       fontSize: 16,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
@@ -383,7 +367,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: primaryGreen, width: 1.5),
+              border: Border.all(color: AppColors.green, width: 1.5),
             ),
             child: TextField(
               controller: _nameController,
@@ -393,10 +377,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                   _chickName = val.trim();
                 });
               },
-              style: const TextStyle(color: primaryGreen, fontSize: 18),
+              style: const TextStyle(color: AppColors.green, fontSize: 18),
               decoration: InputDecoration(
                 hintText: 'or type your own...',
-                hintStyle: TextStyle(color: primaryGreen.withOpacity(0.5), fontSize: 18),
+                hintStyle: TextStyle(color: AppColors.green.withOpacity(0.5), fontSize: 18),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               ),
@@ -427,7 +411,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
           SpeechBalloon(
             nipLocation: NipLocation.bottom,
             color: Colors.white,
-            borderColor: primaryGreen,
+            borderColor: AppColors.green,
             borderWidth: 3,
             borderRadius: 20,
             height: 80,
@@ -438,7 +422,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                 child: Text(
                   "Hi! I'm $_chickName,\nnice to meet you!",
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: primaryGreen, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: AppColors.green, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -492,7 +476,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
             const SpeechBalloon(
               nipLocation: NipLocation.bottom,
               color: Colors.white,
-              borderColor: primaryGreen,
+              borderColor: AppColors.green,
               borderWidth: 3,
               borderRadius: 20,
               height: 55,
@@ -502,7 +486,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                 child: Center(
                   child: Text(
                     "Tell me about yourself!",
-                    style: TextStyle(color: primaryGreen, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: AppColors.green, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -517,7 +501,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
             const Text(
               'ALMOST THERE!',
               style: TextStyle(
-                color: primaryGreen,
+                color: AppColors.green,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.2,
                 fontSize: 12,
@@ -528,7 +512,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
               'One last step.',
               style: TextStyle(
                 fontSize: 32,
-                color: textDark,
+                color: AppColors.textDark,
                 fontFamily: 'serif',
                 fontWeight: FontWeight.bold,
               ),
@@ -558,12 +542,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
             const SizedBox(height: 16),
             _buildSexSelector(),
             const SizedBox(height: 16),
-            _buildTextField(
-              label: 'Age',
-              controller: _ageController,
-              hintText: '15',
-              keyboardType: TextInputType.number,
-            ),
+            _buildDateOfBirthPicker(),
             const SizedBox(height: 32),
             _buildButton("Let's get started!", isEnabled: _isFormValid),
             const SizedBox(height: 24),
@@ -586,7 +565,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
         Text(
           label,
           style: const TextStyle(
-            color: primaryGreen,
+            color: AppColors.green,
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
@@ -607,7 +586,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
           child: TextField(
             controller: controller,
             keyboardType: keyboardType,
-            style: const TextStyle(color: textDark, fontSize: 16),
+            style: const TextStyle(color: AppColors.textDark, fontSize: 16),
             decoration: InputDecoration(
               hintText: hintText,
               hintStyle: TextStyle(color: Colors.grey.withOpacity(0.6)),
@@ -621,7 +600,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: primaryGreen, width: 1.5),
+                borderSide: const BorderSide(color: AppColors.green, width: 1.5),
               ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
@@ -643,7 +622,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
         const Text(
           'Sex',
           style: TextStyle(
-            color: primaryGreen,
+            color: AppColors.green,
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
@@ -664,10 +643,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   decoration: BoxDecoration(
-                    color: isSelected ? primaryGreen.withOpacity(0.1) : Colors.white,
+                    color: isSelected ? AppColors.green.withOpacity(0.1) : Colors.white,
                     borderRadius: BorderRadius.circular(30),
                     border: Border.all(
-                      color: isSelected ? primaryGreen : Colors.grey.withOpacity(0.2),
+                      color: isSelected ? AppColors.green : Colors.grey.withOpacity(0.2),
                       width: isSelected ? 2 : 1,
                     ),
                   ),
@@ -675,7 +654,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                     child: Text(
                       opt['label']!,
                       style: TextStyle(
-                        color: isSelected ? primaryGreen : textDark,
+                        color: isSelected ? AppColors.green : AppColors.textDark,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                         fontSize: 15,
                       ),
@@ -700,7 +679,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
         decoration: BoxDecoration(
           color: isOutline 
               ? Colors.white 
-              : (isLight ? primaryGreen.withOpacity(0.4) : primaryGreen),
+              : (isLight ? AppColors.green.withOpacity(0.4) : AppColors.green),
           borderRadius: BorderRadius.circular(30),
           border: isOutline 
               ? Border.all(
@@ -721,7 +700,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                 text,
                 style: TextStyle(
                   color: isOutline 
-                      ? (isEnabled ? textDark : Colors.grey.withOpacity(0.6))
+                      ? (isEnabled ? AppColors.textDark : Colors.grey.withOpacity(0.6))
                       : Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
@@ -731,6 +710,97 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
           ),
         ),
       ),
+    );
+  }
+
+  // --- DATE OF BIRTH PICKER ---
+  Widget _buildDateOfBirthPicker() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Date of Birth',
+          style: TextStyle(
+            color: AppColors.green,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: () async {
+            final picked = await showDatePicker(
+              context: context,
+              initialDate: _selectedDateOfBirth ?? DateTime(2005, 1, 1),
+              firstDate: DateTime(1920),
+              lastDate: DateTime.now(),
+              builder: (context, child) {
+                return Theme(
+                  data: Theme.of(context).copyWith(
+                    colorScheme: const ColorScheme.light(
+                      primary: AppColors.green,
+                      onPrimary: Colors.white,
+                      surface: AppColors.background,
+                      onSurface: AppColors.textDark,
+                    ),
+                  ),
+                  child: child!,
+                );
+              },
+            );
+            if (picked != null) {
+              setState(() {
+                _selectedDateOfBirth = picked;
+              });
+            }
+          },
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _selectedDateOfBirth != null
+                    ? AppColors.green
+                    : Colors.grey.withOpacity(0.2),
+                width: _selectedDateOfBirth != null ? 1.5 : 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedDateOfBirth != null
+                        ? '${_selectedDateOfBirth!.day.toString().padLeft(2, '0')}/${_selectedDateOfBirth!.month.toString().padLeft(2, '0')}/${_selectedDateOfBirth!.year}'
+                        : 'Select your date of birth',
+                    style: TextStyle(
+                      color: _selectedDateOfBirth != null
+                          ? AppColors.textDark
+                          : Colors.grey.withOpacity(0.6),
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.calendar_today_rounded,
+                  color: _selectedDateOfBirth != null
+                      ? AppColors.green
+                      : Colors.grey.withOpacity(0.4),
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 } //OnboardingScreen
