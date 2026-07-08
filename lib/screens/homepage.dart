@@ -40,7 +40,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   //bottom bar navigation
   int _selectedIndex = 0;
-  // Calcola la vitalità corrente basata sugli obiettivi caricati
+
+  // _currentVitality is a getter calculated dynamically based on the loaded goals
+  // Calculates the total vitality by summing the progress of each goal, weighted: Steps 30%, Sleep 30%, Exercise 30%, Mood 10%. The maximum is 100
   double get _currentVitality {
     if (_goals.isEmpty) return 0.0;
     double total = 0.0;
@@ -60,23 +62,25 @@ class _HomePageState extends State<HomePage> {
     return total;
   }
   
-
+  // The date currently selected for display
   DateTime _selectedDate = DateTime.now();
 
-  //dati obbiettivi giornalieri (caricati dinamicamente)
+  //Lists of daily goals, loaded dynamically
   late List<Map<String, dynamic>> _goals;
 
-  //logica della homepage
+  //homepage
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFDE7),
+      backgroundColor: AppColors.background,
+      // The main body of the page, which changes based on the selected navigation index
       body: _getPage(_selectedIndex),
       bottomNavigationBar: NavigationBar(
         backgroundColor: Colors.white,
-        indicatorColor: const Color(0xFF5D59B5).withOpacity(0.15),
+        indicatorColor: AppColors.purple.withOpacity(0.15),
         selectedIndex: _selectedIndex,
         onDestinationSelected: (int index) {
+          // setState() updates the state of the widget, causing it to rebuild
           setState(() {
             _selectedIndex = index;
           });
@@ -84,22 +88,22 @@ class _HomePageState extends State<HomePage> {
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined, color: Colors.grey),
-            selectedIcon: Icon(Icons.home_rounded, color: Color(0xFF5D59B5)),
+            selectedIcon: Icon(Icons.home_rounded, color: AppColors.purple),
             label: 'Home',
           ),
           NavigationDestination(
             icon: Icon(Icons.favorite_border_rounded, color: Colors.grey),
-            selectedIcon: Icon(Icons.favorite_rounded, color: Color(0xFF5D59B5)),
+            selectedIcon: Icon(Icons.favorite_rounded, color: AppColors.purple),
             label: 'Mood',
           ),
           NavigationDestination(
             icon: Icon(Icons.bar_chart_rounded, color: Colors.grey),
-            selectedIcon: Icon(Icons.bar_chart_rounded, color: Color(0xFF5D59B5)),
+            selectedIcon: Icon(Icons.bar_chart_rounded, color: AppColors.purple),
             label: 'Stats',
           ),
           NavigationDestination(
             icon: Icon(Icons.shopping_bag_outlined, color: Colors.grey),
-            selectedIcon: Icon(Icons.shopping_bag_rounded, color: Color(0xFF5D59B5)),
+            selectedIcon: Icon(Icons.shopping_bag_rounded, color: AppColors.purple),
             label: 'Shop',
           ),
         ],
@@ -116,8 +120,10 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
+            // Top bar containing greetings,  stars and the menu button 
             _buildTopBar(userProvider),
             const SizedBox(height: 24),
+            // Date navigator, allows to navigate between days
             Center(
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 320),
@@ -125,7 +131,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             const SizedBox(height: 24),
-            //riquadro con il pulcino
+            //card with the chick
             Center(
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 320),
@@ -134,21 +140,23 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: const Color(0xFF5D59B5).withOpacity(0.12),
+                    color: AppColors.purple.withOpacity(0.12),
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF5D59B5).withOpacity(0.04),
+                      color: AppColors.purple.withOpacity(0.04),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
                   ],
                 ),
+                // The content of the chick card is handled by the _buildChickSection method
                 child: _buildChickSection(userProvider),
               ),
             ),
             const SizedBox(height: 24),
+            //card with the goals
             Center(
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 320),
@@ -157,12 +165,12 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: const Color(0xFF5D59B5).withOpacity(0.12),
+                    color: AppColors.purple.withOpacity(0.12),
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF5D59B5).withOpacity(0.04),
+                      color: AppColors.purple.withOpacity(0.04),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -184,13 +192,14 @@ class _HomePageState extends State<HomePage> {
       case 0:
         return Consumer2<UserProvider, HealthDataProvider>(
           builder: (context, userProvider, healthProvider, child) {
+            // Update goals for the selected date
             _updateGoalsForDate(_selectedDate, userProvider.isMoodDoneForDate(_selectedDate), healthProvider, userProvider);
             return healthProvider.isLoading
                 ? const Scaffold(
-                    backgroundColor: Color(0xFFFFFDE7),
+                    backgroundColor: AppColors.background,
                     body: Center(
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF5D59B5)),
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.purple),
                       ),
                     ),
                   )
@@ -209,10 +218,10 @@ class _HomePageState extends State<HomePage> {
             _updateGoalsForDate(_selectedDate, userProvider.isMoodDoneForDate(_selectedDate), healthProvider, userProvider);
             return healthProvider.isLoading
                 ? const Scaffold(
-                    backgroundColor: Color(0xFFFFFDE7),
+                    backgroundColor: AppColors.background,
                     body: Center(
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF5D59B5)),
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.purple),
                       ),
                     ),
                   )
@@ -262,7 +271,7 @@ class _HomePageState extends State<HomePage> {
       },
       {
         'label': 'Exercise',
-        'color': const Color(0xFF5D59B5),
+        'color': AppColors.purple,
         'progress': 0.50,
         'value': '1 sess.',
         'points': '+6',
@@ -278,7 +287,7 @@ class _HomePageState extends State<HomePage> {
     final sleepMin = healthProvider.totalSleepMinutes;
     final exercises = healthProvider.totalExerciseSessions;
     
-    // Esegue il calcolo dinamico in base all'età
+    // Execute the dynamic calculation based on age
     final reward = GoalCalculation.calculate(
       age: userProvider.age,
       steps: steps,
@@ -323,7 +332,7 @@ class _HomePageState extends State<HomePage> {
       },
       {
         'label': 'Exercise',
-        'color': const Color(0xFF5D59B5),
+        'color': AppColors.purple,
         'progress': exerciseProgress,
         'value': exercises == 1 ? '1 sess.' : '$exercises sess.',
         'points': '+6',
@@ -331,7 +340,7 @@ class _HomePageState extends State<HomePage> {
       },
     ];
 
-    // Calcola e aggiorna la vitalità per la data selezionata nel provider
+    // Calculates and updates the vitality for the selected date in the provider
     final double computedVitality = (reward.stepsProgress * 30) + 
                                      (reward.sleepProgress * 30) + 
                                      (exerciseProgress * 30) + 
@@ -366,11 +375,12 @@ class _HomePageState extends State<HomePage> {
 
 
 // METHODS FOR BUILDING THE DASHBOARD CONTENT
-// Method 1: The _buildDateNavigator method builds the date navigator.  
+// Helper method to check if two dates are the same ignoring hours, minutes, seconds and milliseconds
   bool _isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
+  // Helper method to parse a date string like "2026-07-08" in DateTime
   DateTime _parseDateStr(String dateStr) {
     final parts = dateStr.split('-');
     return DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
@@ -378,24 +388,30 @@ class _HomePageState extends State<HomePage> {
 
   // Method 1: The _buildDateNavigator method builds the date navigator.  
   Widget _buildDateNavigator(UserProvider userProvider) {
+    // Formats the selected date to "Day, DayOfMonth MonthName Year"
     final formattedDate = DateFormat('E, d MMM yyyy').format(_selectedDate);
 
+    // Gets the first user's access date from the provider, if it is empty, it uses the current date
     final firstAccessDate = userProvider.firstAccessDate.isNotEmpty 
         ? _parseDateStr(userProvider.firstAccessDate) 
         : DateTime.now();
 
-    final bool canGoBack = _selectedDate.isAfter(firstAccessDate) && !_isSameDay(_selectedDate, firstAccessDate);
-    
-    // We can always go forward in time infinitely
+    // The user can go back in time only to the first access date
+    final bool canGoBack = _selectedDate.isAfter(firstAccessDate)
+     && !_isSameDay(_selectedDate, firstAccessDate);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         GestureDetector(
+          // When the user taps on the left arrow, the selected date is decremented by 1 day
+          // if the selected date is after the first access date. If the user is on the first access date, 
+          // the arrow is disabled = canGoBack is false 
           onTap: canGoBack ? () {
             setState(() {
               _selectedDate = _selectedDate.subtract(const Duration(days: 1));
             });
+            // Once the date is changed, it fetches the data for the new date from IMPACT
             Provider.of<HealthDataProvider>(context, listen: false)
                 .fetchDataOfDay(_selectedDate);
           } : null,
@@ -406,8 +422,8 @@ class _HomePageState extends State<HomePage> {
               shape: BoxShape.circle,
               border: Border.all(
                 color: canGoBack 
-                    ? const Color(0xFF5D59B5).withOpacity(0.15) 
-                    : const Color(0xFF5D59B5).withOpacity(0.05),
+                    ? AppColors.purple.withOpacity(0.15) 
+                    : AppColors.purple.withOpacity(0.05),
                 width: 1.5,
               ),
               color: canGoBack ? Colors.white : Colors.grey.withOpacity(0.05),
@@ -415,8 +431,8 @@ class _HomePageState extends State<HomePage> {
             child: Icon(
               Icons.chevron_left_rounded,
               color: canGoBack 
-                  ? const Color(0xFF5D59B5) 
-                  : const Color(0xFF5D59B5).withOpacity(0.25),
+                  ? AppColors.purple 
+                  : AppColors.purple.withOpacity(0.25),
             ),
           ),
         ),
@@ -425,7 +441,7 @@ class _HomePageState extends State<HomePage> {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF2A2859),
+            color: AppColors.textDark,
           ),
         ),
         GestureDetector(
@@ -442,14 +458,14 @@ class _HomePageState extends State<HomePage> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: const Color(0xFF5D59B5).withOpacity(0.15),
+                color: AppColors.purple.withOpacity(0.15),
                 width: 1.5,
               ),
               color: Colors.white,
             ),
             child: const Icon(
               Icons.chevron_right_rounded,
-              color: Color(0xFF5D59B5),
+              color: AppColors.purple,
             ),
           ),
         ),
@@ -525,10 +541,11 @@ class _HomePageState extends State<HomePage> {
                     MaterialPageRoute(builder: (_) => const ProfileScreen()),
                   );
                 } else if (value == 'logout') {
-                  //logout functionality 
+                  //logout functionality: it's asynchronous because it deletes the tokens from the device
                   final impact = Impact();
-                  await impact.deleteTokens(); // Elimina i token salvati
+                  await impact.deleteTokens(); // delete stored tokens
                   // Clear user data from UserProvider
+                  // if (mounted) checks if the widget is still in the widget tree; if it's true it calls clearUserData();
                   if (mounted) {
                     await Provider.of<UserProvider>(context, listen: false).clearUserData();
                   }
@@ -537,7 +554,7 @@ class _HomePageState extends State<HomePage> {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(builder: (_) => const LoginPage()),
-                    (route) => false, // Rimuove tutta la navigazione precedente
+                    (route) => false,
                   );
                 }
               },
@@ -574,19 +591,22 @@ class _HomePageState extends State<HomePage> {
 
   //Method 3: The _buildChickSection method builds the chick section with Integrated Vitality Bar.  
   Widget _buildChickSection(UserProvider userProvider) {
-    // Get historical state for the currently selected date
+    // getHistoricalStateForDate is a method of the UserProvider class that returns the historical state of the chick for the currently selected date
     final historicalState = userProvider.getHistoricalStateForDate(_selectedDate);
+    //currentLevel is the level of the chick for the currently selected date
     final int currentLevel = historicalState['level'] as int;
+    //currentXp is the xp of the chick for the currently selected date
     final int currentXp = historicalState['xp'] as int;
+    //currentOverflowXp is the overflow xp of the chick for the currently selected date
     final int currentOverflowXp = historicalState['overflowXp'] as int;
+    //vitality is the vitality of the chick for the currently selected date
     final double vitality = _currentVitality;
 
-    // Colore equipaggiato (solo livello 6)
-    final String? equippedColor = userProvider.equippedColor;
+    // Default asset path based on the current level (e.g. chick1.png, chick2.png, etc.)
     String assetPath = 'assets/images/chick$currentLevel.png';
 
+    // For level 6, use vitality-dependent variants
     if (currentLevel == 6) {
-    //Usa varianti vitality
     if (vitality < 40) {
       assetPath = 'assets/images/chick6_sad.png';
     } else if (vitality >= 80) {
@@ -595,7 +615,8 @@ class _HomePageState extends State<HomePage> {
       assetPath = 'assets/images/chick6.png';
     }
 }
-
+    
+    // Calculate the maximum XP required for the current level
     int maxXp = 100;
     if (currentLevel == 1) {
       maxXp = 100;
@@ -608,8 +629,6 @@ class _HomePageState extends State<HomePage> {
     } else if (currentLevel == 5) {
       maxXp = 1500;
     }
-    
-    
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -621,13 +640,15 @@ class _HomePageState extends State<HomePage> {
             SizedBox(
                 width: 350, 
                 height: 180,
+                // Stack allows you to layer multiple widgets on top of each other
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                  // Piano 1 — Sfondo (habitat)
+                  // Layer 1 — Background (habitat)
                     Positioned.fill(
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
+                        // if no background is equipped, use the default one (grassland.png)
                         child: Image.asset(
                           _backgroundAssets[userProvider.equippedBackground] ??
                                'assets/images/grassland.png',
@@ -635,7 +656,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ),
-                    // Piano 2 — Pulcino
+                    // Layer 2 — Chick
                     Positioned(
                       top: 35,
                       left: 15,
@@ -649,7 +670,7 @@ class _HomePageState extends State<HomePage> {
                             width: 290,
                             fit: BoxFit.contain,
                           ),
-                          // Piano 3 — Accessorio (se presente)
+                          // Layer 3 — Accessory (if present)
                           if (userProvider.equippedAccessory != null &&
                               _accessoryAssets.containsKey(userProvider.equippedAccessory))
                             Positioned(
@@ -674,7 +695,7 @@ class _HomePageState extends State<HomePage> {
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF2A2859), // Dark Blue
+                color: AppColors.textDark, // Dark Blue
               ),
             ),
             const SizedBox(height: 8),
@@ -684,7 +705,7 @@ class _HomePageState extends State<HomePage> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF5D59B5).withOpacity(0.08), // Light purple background
+                    color: AppColors.purple.withOpacity(0.08), // Light purple background
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -692,7 +713,7 @@ class _HomePageState extends State<HomePage> {
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF5D59B5),
+                      color: AppColors.purple,
                     ),
                   ),
                 ),
@@ -703,10 +724,11 @@ class _HomePageState extends State<HomePage> {
                     fontSize: 16,
                   ),
                 ),
+                // growth text only shown for level 1 to 5
                 if (currentLevel < 6)
                   RichText(
                     text: TextSpan(
-                      style: const TextStyle(fontSize: 13, color: Color(0xFF2A2859)),
+                      style: const TextStyle(fontSize: 13, color: AppColors.textDark),
                       children: [
                         const TextSpan(
                           text: 'Growth: ',
@@ -730,7 +752,7 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       RichText(
                         text: TextSpan(
-                          style: const TextStyle(fontSize: 13, color: Color(0xFF2A2859)),
+                          style: const TextStyle(fontSize: 13, color: AppColors.textDark),
                           children: [
                             const TextSpan(
                               text: 'Next Star: ',
@@ -754,7 +776,7 @@ class _HomePageState extends State<HomePage> {
                           showDialog(
                             context: context,
                             builder: (context) => AlertDialog(
-                              backgroundColor: const Color(0xFFFFFDE7),
+                              backgroundColor: AppColors.background,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
                               ),
@@ -768,7 +790,7 @@ class _HomePageState extends State<HomePage> {
                                 style: TextStyle(
                                   fontSize: 14,
                                   height: 1.5,
-                                  color: Color(0xFF2A2859),
+                                  color: AppColors.textDark,
                                 ),
                               ),
                               actions: [
@@ -777,7 +799,7 @@ class _HomePageState extends State<HomePage> {
                                   child: const Text(
                                     'Got it!',
                                     style: TextStyle(
-                                      color: Color(0xFF5D59B5),
+                                      color: AppColors.purple,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -791,12 +813,12 @@ class _HomePageState extends State<HomePage> {
                           height: 20,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: const Color(0xFF5D59B5).withOpacity(0.1),
+                            color: AppColors.purple.withOpacity(0.1),
                           ),
                           child: const Icon(
                             Icons.info_outline_rounded,
                             size: 14,
-                            color: Color(0xFF5D59B5),
+                            color: AppColors.purple,
                           ),
                         ),
                       ),
@@ -827,7 +849,7 @@ class _HomePageState extends State<HomePage> {
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF2A2859), // Dark Blue
+                color: AppColors.textDark, // Dark Blue
               ),
             ),
           ],
@@ -836,18 +858,19 @@ class _HomePageState extends State<HomePage> {
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: LinearProgressIndicator(
-            value: (vitality / 100).clamp(0.0, 1.0),
+            value: (vitality / 100).clamp(0.0, 1.0), //clamp is used to prevent the progress bar from going above 1 or below 0
             minHeight: 10,
-            backgroundColor: const Color(0xFF5D59B5).withOpacity(0.08), // Light purple bg
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF5D59B5)), // Purple progress
+            backgroundColor: AppColors.purple.withOpacity(0.08), // Light purple bg
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.purple), // the color purple of the progress bar is static 
           ),
         ),
       ],
     );
   }
 
-// Restituisce (width, bottom) per ogni accessorio
-// dx = larghezza immagine, dy = offset dal basso
+// Offsets: positions the accessories on the chick 
+// Returns (width, bottom) for each accessory
+// dx = image width, dy = offset from bottom
 Offset _accessoryOffset(String? accessoryId) {
   switch (accessoryId) {
     case 'accessory_2': // Sunglasses
@@ -874,7 +897,7 @@ Offset _accessoryOffset(String? accessoryId) {
             ),
           ),
           const SizedBox(height: 14),
-          //lista obbiettivi giornalieri 
+          //list of daily goals  
           ...List.generate(_goals.length, (i) => _buildGoalRow(_goals[i])),
         ],
       );
@@ -907,19 +930,21 @@ Offset _accessoryOffset(String? accessoryId) {
               goal['label'] as String,
               style: const TextStyle(
                 fontSize: 14,
-                color: Color(0xFF2A2859),
+                color: AppColors.textDark,
               ),
             ),
           ),
           const SizedBox(width: 8),
  
-          // Barra di avanzamento
+          // Progress bar
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: goal['progress'] as double,
                 minHeight: 6,
+                // if the goal is done, the progress bar is colored
+                // if the goal is not done, the progress bar is grey
                 backgroundColor: Colors.grey.withOpacity(0.15),
                 valueColor: AlwaysStoppedAnimation<Color>(
                   done ? color : Colors.grey.withOpacity(0.3),
@@ -929,7 +954,7 @@ Offset _accessoryOffset(String? accessoryId) {
           ),
           const SizedBox(width: 10),
  
-          // Valore (ora è statico)
+          // Value of the goal 
           SizedBox(
             width: 60,
             child: Text(
@@ -943,7 +968,7 @@ Offset _accessoryOffset(String? accessoryId) {
           ),
           const SizedBox(width: 8),
  
-          // Badge punti
+          // Badge of points 
           Container(
             padding:
                 const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

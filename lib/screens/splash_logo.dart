@@ -6,6 +6,7 @@ import 'login.dart';
 import 'homepage.dart';
 import 'onboarding_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:TwiC/utils/app_colors.dart';
 
 class SplashLogoScreen extends StatefulWidget {
   const SplashLogoScreen({super.key});
@@ -38,11 +39,7 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
 
   bool _showFinalTwiC = false; // quando true mostra TwiC grande
 
-  // Allineiamo i colori a quelli della login page
-  //static const Color primaryYellow = Color(0xFFFFD158);
-  static const Color primaryGreen = Color(0xFF4CAF50);
-  static const Color bgColor = Color(0xFFFFFDE7);
-  static const Color textDark = Color(0xFF2A2859);
+
 
   @override
   void initState() {
@@ -141,7 +138,7 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.background,
       body: Padding(
         // Padding a sinistra — tutto allineato a sinistra
         padding: const EdgeInsets.only(left: 48.0),
@@ -177,7 +174,7 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
                       style: GoogleFonts.poppins(
                         fontSize: _twicSize.value,
                         fontWeight: FontWeight.bold,
-                        color: textDark, // Stesso colore scuro della login
+                        color: AppColors.textDark, // Stesso colore scuro della login
                       ),
                     );
                   },
@@ -203,7 +200,7 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
             style: GoogleFonts.poppins(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: primaryGreen, // Verde per le lettere principali dell'acronimo
+              color: AppColors.green, // Verde per le lettere principali dell'acronimo
             ),
           ),
           // Resto della parola — appare con il fade
@@ -214,7 +211,7 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
               style: GoogleFonts.poppins(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: textDark, // Testo scuro coordinato
+                color: AppColors.textDark, // Testo scuro coordinato
               ),
             ),
           ),
