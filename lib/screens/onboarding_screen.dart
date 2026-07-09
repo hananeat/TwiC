@@ -93,11 +93,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
       //Save the data
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       
-      // Salva il nome del pulcino nel provider
+      // Save the chick name in the provider
       await userProvider.setChickName(_chickName);
-      debugPrint('Nome del pulcino salvato in UserProvider: $_chickName');
+      debugPrint('Name of chick saved in UserProvider: $_chickName');
 
-      // Salva i dettagli del profilo dell'utente nel provider
+      // Save the user profile details in the provider
       await userProvider.setUserProfile(
         _firstNameController.text.trim(),
         _lastNameController.text.trim(),
@@ -106,7 +106,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
       );
 
       if (mounted) {
-        // Vai alla homepage
+        // Go to the homepage
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: ((context) => const HomePage())),
@@ -190,7 +190,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     );
   }
 
-  // --- PAGINA 1 ---
+  // --- PAGE 1 ---
   Widget _buildPage1() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32.0),
@@ -213,7 +213,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
               //_lottieController1.value = startPoint;
               //_lottieController1.animateTo(endPoint); 
               
-              // Se invece volessi farla ripetere in loop tra questi due punti, potresti usare:
+              // To make it repeat between these two points
                 _lottieController1.repeat(
                  min: startPoint,
                  max: endPoint, 
@@ -227,7 +227,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
             style: TextStyle(
               fontSize: 32,
               color: AppColors.textDark,
-              fontFamily: 'serif', // Stile elegante simile all'immagine
+              fontFamily: 'serif', 
               height: 1.2,
             ),
           ),
@@ -247,7 +247,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     );
   }
 
-  // --- PAGINA 2 ---
+  // --- PAGE 2 ---
   Widget _buildPage2() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -275,7 +275,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
 
           const SizedBox(height: 16),
 
-          // Animazione del pulcino
+          // Animation of the chick
             Lottie.asset(
             'assets/hatching_chick.json',
             width: 150,
@@ -284,11 +284,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
             onLoaded: (composition) {
               _lottieController2.duration = composition.duration;
               
-              // Puoi modificare questi valori tra 0.0 (inizio) e 1.0 (fine)
-              const double startPoint = 0.25; // Punto di partenza //0.43
-              const double endPoint = 0.6;  // Punto finale
+              // You can change these values between 0.0 (start) and 1.0 (end)
+              const double startPoint = 0.25; // Starting point //0.43
+              const double endPoint = 0.6;  // Ending point
 
-              // Se invece volessi farla ripetere in loop tra questi due punti, potresti usare:
+              // If you want it to repeat between these two points, you can use:
                 _lottieController2.repeat(
                  min: startPoint,
                  max: endPoint, 
@@ -327,7 +327,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
           ),
           const SizedBox(height: 5),
           
-          // Griglia dei nomi suggeriti
+          // Suggested chick names grid
           Wrap(
             alignment: WrapAlignment.center,
             spacing: 8.0,
@@ -339,7 +339,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                   setState(() {
                     _chickName = name;
                     _nameController.clear();
-                    // Nascondiamo tastiera se era aperta
+                    // Hide keyboard if it was open
                     FocusScope.of(context).unfocus(); 
                   });
                 },
@@ -401,7 +401,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     );
   }
 
-  // --- PAGINA 3 ---
+  // --- PAGE 3 ---
   Widget _buildPage3() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32.0),
@@ -465,7 +465,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     );
   }
 
-  // --- PAGINA 4 ---
+  // --- PAGE 4 ---
   Widget _buildPage4() {
     return SingleChildScrollView(
       child: Padding(
@@ -552,7 +552,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     );
   }
 
-  // --- HELPER COMPONENTI INPUT ---
+  // --- HELPER COMPONENTS INPUT ---
+  //1. Text field: parameters: label, controller, hint text, keyboard type. 
+  //Return: Column with a text field. The field is decorated with a border and a shadow.
   Widget _buildTextField({
     required String label,
     required TextEditingController controller,
@@ -609,7 +611,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
       ],
     );
   }
-
+  //2. Sex selector: parameters: none. 
+  //Return: Column with a sex selector. 
   Widget _buildSexSelector() {
     final options = [
       {'id': 'Female', 'label': '♀ Female'},
@@ -669,7 +672,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     );
   }
 
-  // --- PULSANTE GENERICO ---
+  // 3. Generic button: parameters: text, isLight, isOutline, isEnabled. 
+  //Return: Button widget.
+  //The button is enabled if isEnabled is true. Otherwise, it is disabled.
   Widget _buildButton(String text, {bool isLight = false, bool isOutline = false, bool isEnabled = true}) {
     return Opacity(
       opacity: isEnabled ? 1.0 : 0.4,
@@ -713,7 +718,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     );
   }
 
-  // --- DATE OF BIRTH PICKER ---
+  //4. Date of Birth picker: parameters: none. 
+  //Return: Date of Birth picker widget.
+  //The widget is a column with a text field and a date picker.
+  //The date picker is initialized with the date 2005-01-01 and the user can select any date from 1920 to the current date.
   Widget _buildDateOfBirthPicker() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
