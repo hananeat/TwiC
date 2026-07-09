@@ -182,7 +182,7 @@ class _MoodScreenState extends State<MoodScreen> {
     }
   }
   
-  //Genera l'insight text in base ai chip selezionati 
+  //Generate the insight text based on the selected chips.
   String _getInsightText(List<String> chips, String chickName) {
     if (chips.isEmpty) {
       return "Select what happened today to get insights from $chickName!";
@@ -203,7 +203,7 @@ class _MoodScreenState extends State<MoodScreen> {
       }
     }
 
-    //Costruisce la frase finale
+    //Build the final summary string
     String summary = "";
     if (activePhrases.length == 1) {
       summary = "Today${activePhrases[0]}.";
@@ -214,7 +214,7 @@ class _MoodScreenState extends State<MoodScreen> {
       String last = activePhrases.last;
       summary = "Today$primary ;$last.";
     }
-    //aggiunge consiglio finale 
+    //Generate advice text
     String advice = "";
     if (chips.contains('exam_stress')) {
       advice = " Make sure to listen to your body and take breaks when needed."; 
