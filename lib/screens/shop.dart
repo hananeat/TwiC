@@ -22,12 +22,12 @@ class ShopItem {
   });
 }
 
-//Acquisti disponibili nel negozio
+//Acquisti disponibili nel negozio divisi per categoria
 const _habitats = [
   ShopItem(id: 'habitat_0', name: 'Grassland', emoji: '🌿', price: 0, owned: true),
-  ShopItem(id: 'habitat_1', name: 'Desert', emoji: '🏜️', price: 100),
-  ShopItem(id: 'habitat_2', name: 'Forest', emoji: '🌲', price: 150),
-  ShopItem(id: 'habitat_3', name: 'Beach', emoji: '🏖️', price: 200),
+  ShopItem(id: 'habitat_1', name: 'Desert', emoji: '🏜️', price: 1500),
+  ShopItem(id: 'habitat_2', name: 'Forest', emoji: '🌲', price: 1500),
+  ShopItem(id: 'habitat_3', name: 'Beach', emoji: '🏖️', price: 3000),
 ];
 
 const _colorsItems = [
@@ -38,11 +38,11 @@ const _colorsItems = [
 ];
 
 const _accessoriesItems = [
-  ShopItem(id: 'accessory_1', name: 'Summer Hat', emoji: '👒', price: 30),
-  ShopItem(id: 'accessory_2', name: 'Sunglasses', emoji: '🕶️', price: 50),
+  ShopItem(id: 'accessory_1', name: 'Summer Hat', emoji: '👒', price: 500),
+  ShopItem(id: 'accessory_2', name: 'Sunglasses', emoji: '🕶️', price: 600),
 ];
 
-//pagina shop
+// Schermata del negozio
 class ShopScreen extends StatefulWidget {
   const ShopScreen({super.key});
 
@@ -50,29 +50,16 @@ class ShopScreen extends StatefulWidget {
   State<ShopScreen> createState() => _ShopScreenState();
 }
 
+// Stato della schermata del negozio
 class _ShopScreenState extends State<ShopScreen> {
-  ShopCategory _currentCategory = ShopCategory.habitat;
-  ShopItem? _selectedItem;    //sostituire con valore dinamico
+  ShopCategory _currentCategory = ShopCategory.habitat; //categoria selezionata di default
+  ShopItem? _selectedItem;  
  
   List<ShopItem> get _items => switch (_currentCategory) {
         ShopCategory.habitat   => _habitats,
         ShopCategory.colors    => _colorsItems,
         ShopCategory.accessories => _accessoriesItems,
       };
-  
-  String _statusMessage(int coins) {
-    final item = _selectedItem;
-    if (item == null) return 'Select an item to see details';
-    if (item.owned) return 'You already own this item';
-    if (item.price <= coins) return 'You can afford ${item.name}';
-    return 'You need ${item.price - coins} more coins to buy ${item.name}';
-  }
-
-  bool _statusIsPositive(int coins) {
-    final item = _selectedItem;
-    if (item == null) return false;
-    return item.owned || item.price <= coins;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +67,7 @@ class _ShopScreenState extends State<ShopScreen> {
     final userProvider = context.watch<UserProvider>();
     final int coins = userProvider.stars; 
 
+    // Costruzione interfaccia utente della schermata del negozio
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -167,7 +155,7 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
   
-  //tabs per categorie
+  //barra con le categorie disponibili nel negozio, evidenzia la categoria selezionata
   Widget _buildTabs() {
     return Container(
       padding: const EdgeInsets.all(4),
@@ -185,6 +173,8 @@ class _ShopScreenState extends State<ShopScreen> {
           };
           return Expanded(
             child: GestureDetector(
+              // Aggiorna la categoria selezionata e deseleziona l'oggetto selezionato
+              // per evitare che un oggetto di una categoria rimanga selezionato quando si passa a un'altra categoria
               onTap: () => setState(() {
                 _currentCategory = cat;
                 _selectedItem = null;
@@ -215,12 +205,12 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
-  //griglia oggetti
+  //griglia con gli oggetti disponibili nella categoria selezionata
   Widget _buildGrid(int coins, UserProvider userProvider) {
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(), //griglia delega interamente lo scrolling al contenitore padre
       crossAxisSpacing: 14,
       mainAxisSpacing: 14,
       childAspectRatio: 1.1,
@@ -228,10 +218,15 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
+  // Verifica se l'oggetto è posseduto di base o acquistato dall'utente
+  bool _isOwned(ShopItem item, UserProvider userProvider) {
+    return item.owned || userProvider.ownedItems.contains(item.id);
+  }
+  
   //per ogni oggetto, mostra nome, icona, prezzo e stato (acquistato/non)
   Widget _buildItemCard(ShopItem item, int coins, UserProvider userProvider) {
     final bool isSelected = _selectedItem?.id == item.id;
-    final bool isOwned = item.owned || userProvider.ownedItems.contains(item.id);
+    final bool isOwned = _isOwned(item, userProvider);
     final bool locked = !isOwned && item.price > coins;
  
     return GestureDetector(
@@ -265,6 +260,7 @@ class _ShopScreenState extends State<ShopScreen> {
                 ),
               ),
               const SizedBox(height: 3),
+              //Se l'oggetto è della categoria colori (e non è giallo) mostra "coming soon" 
               if (_currentCategory == ShopCategory.colors && !isOwned)
                 const Text(
                   '🔒 Coming Soon',
@@ -310,8 +306,7 @@ class _ShopScreenState extends State<ShopScreen> {
   //compare stato dell'oggetto selezionato 
   Widget _buildActionBar(int coins, UserProvider userProvider) {
   final item = _selectedItem;
-  if (_currentCategory == ShopCategory.colors && _selectedItem != null && !(_selectedItem!.owned || 
-  userProvider.ownedItems.contains(_selectedItem!.id))) {
+  if (_currentCategory == ShopCategory.colors && _selectedItem != null && !_isOwned(_selectedItem!, userProvider)) {
     return _actionContainer(
       color: Colors.grey.withOpacity(0.1),
       child: const Text(
@@ -322,24 +317,19 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
   
+  // Mostra messaggio in base allo stato dell'oggetto selezionato e alle monete disponibili
   if (item == null) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
+    return _actionContainer(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)],
-      ),
-      child: const Text(
-        'Select an item to see details',
-        textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textDark),
-      ),
+        child: const Text(
+          'Select an item to see details',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textDark),
+        ),
     );
   }
-  final bool isOwned = item.owned || userProvider.ownedItems.contains(item.id);
-  // Determina se è equipaggiato
+  final bool isOwned = _isOwned(item, userProvider);
+  // Determina se è equipaggiato controllando la proprietà corrispondente nel provider
   bool isEquipped = false;
   if (_currentCategory == ShopCategory.habitat) {
     isEquipped = userProvider.equippedBackground == item.id;
@@ -415,6 +405,8 @@ class _ShopScreenState extends State<ShopScreen> {
     ),
   );
 }
+
+// Contenitore per il messaggio di stato dell'oggetto selezionato
 Widget _actionContainer({required Color color, required Widget child}) {
   return Container(
     width: double.infinity,
