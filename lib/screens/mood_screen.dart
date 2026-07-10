@@ -46,6 +46,18 @@ class _MoodScreenState extends State<MoodScreen> {
       'color': const Color(0xFFE85C3B), // Red-orange
       'bgColor': const Color(0xFFFBE9E7),
     },
+    {
+      'id': 'worked out',
+      'label': 'Worked out',
+      'color': const Color(0xFFFBC02D), // Yellow
+      'bgColor': const Color(0xFFFFECB3),
+      },
+    {
+      'id': 'relaxed',
+      'label': 'Relaxed',
+      'color': const Color(0xFFE91E63), // Pink
+      'bgColor': const Color(0xFFFCE4EC),
+    }
   ];
 
   @override
@@ -194,6 +206,8 @@ class _MoodScreenState extends State<MoodScreen> {
       'tired': ' it\'s okay to slow down and rest if you need to',
       'slept_well': ' you had a good night\'s sleep, it can make a big difference',
       'exam_stress': ' you are stressed about an exam, but remember that exams doesn\'t define your worth',
+      'worked out': ' you took care of your body and mind through exercise',
+      'relaxed': ' you took time to relax and recharge, which is important for your well-being',
     };
 
     List<String> activePhrases = [];
