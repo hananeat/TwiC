@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
-import '../utils/impact.dart';
+import '../services/impact.dart';
 import '../providers/user_provider.dart';
 import 'package:TwiC/utils/app_colors.dart';
 

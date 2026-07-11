@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/steps.dart';
 import '../models/sleep.dart';
 import '../models/exercises.dart';
-import '../utils/impact.dart';
+import '../services/impact.dart';
 
 class HealthDataProvider extends ChangeNotifier {
   final Impact _impact = Impact();

@@ -9,7 +9,7 @@ import 'package:TwiC/utils/app_colors.dart';
 import 'shop.dart';
 import 'profile_screen.dart';
 import 'login.dart';
-import '../utils/impact.dart';
+import '../services/impact.dart';
 import '../utils/goal_calculation.dart';
 
 const _backgroundAssets = {

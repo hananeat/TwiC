@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:TwiC/utils/impact.dart';
+import 'package:TwiC/services/impact.dart';
 import 'package:lottie/lottie.dart';
 import 'login.dart';
 import 'homepage.dart';
