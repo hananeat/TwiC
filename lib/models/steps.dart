@@ -1,7 +1,6 @@
 import 'package:intl/intl.dart';
 
 class Steps {
-  
   // Instance variables
   final DateTime timestamp;
   final int value;

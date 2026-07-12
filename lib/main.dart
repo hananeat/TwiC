@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       title: 'TwiC',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // Imposta Poppins come font di default per tutta l'applicazione
+        // Sets Poppins as the default font for the entire application
         textTheme: GoogleFonts.poppinsTextTheme(
           Theme.of(context).textTheme,
         ),

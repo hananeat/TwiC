@@ -121,7 +121,7 @@ class Impact {
     final sp = await SharedPreferences.getInstance();
     var access = sp.getString('access');
 
-    // Se il token è scaduto o nullo, lo aggiorna prima di inviare la richiesta
+    // If the token is expired or null, refresh it before sending the request
     if (access == null || JwtDecoder.isExpired(access)) {
       await refreshTokens();
       access = sp.getString('access');
@@ -161,7 +161,7 @@ class Impact {
     final sp = await SharedPreferences.getInstance();
     var access = sp.getString('access');
 
-    // Se il token è scaduto o nullo, lo aggiorna prima di inviare la richiesta
+    // If the token is expired or null, refresh it before sending the request
     if (access == null || JwtDecoder.isExpired(access)) {
       await refreshTokens();
       access = sp.getString('access');

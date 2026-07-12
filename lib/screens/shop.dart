@@ -3,7 +3,7 @@ import 'package:TwiC/utils/app_colors.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 
-// Definizione categorie oggetti del negozio
+// Shop item category definitions
 enum ShopCategory { habitat, colors, accessories }
  
 class ShopItem {
@@ -22,7 +22,7 @@ class ShopItem {
   });
 }
 
-//Acquisti disponibili nel negozio divisi per categoria
+// Available shop items grouped by category
 const _habitats = [
   ShopItem(id: 'habitat_0', name: 'Grassland', emoji: '🌿', price: 0, owned: true),
   ShopItem(id: 'habitat_1', name: 'Desert', emoji: '🏜️', price: 1500),
@@ -42,7 +42,7 @@ const _accessoriesItems = [
   ShopItem(id: 'accessory_2', name: 'Sunglasses', emoji: '🕶️', price: 600),
 ];
 
-// Schermata del negozio
+// Shop screen widget
 class ShopScreen extends StatefulWidget {
   const ShopScreen({super.key});
 
@@ -50,9 +50,9 @@ class ShopScreen extends StatefulWidget {
   State<ShopScreen> createState() => _ShopScreenState();
 }
 
-// Stato della schermata del negozio
+// State of the shop screen
 class _ShopScreenState extends State<ShopScreen> {
-  ShopCategory _currentCategory = ShopCategory.habitat; //categoria selezionata di default
+  ShopCategory _currentCategory = ShopCategory.habitat; // Default selected category
   ShopItem? _selectedItem;  
  
   List<ShopItem> get _items => switch (_currentCategory) {
@@ -63,11 +63,11 @@ class _ShopScreenState extends State<ShopScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //legge valori dal provider e si aggiorna automaticamente quando cambiano
+    // Reads values from the provider and automatically rebuilds when they change
     final userProvider = context.watch<UserProvider>();
     final int coins = userProvider.stars; 
 
-    // Costruzione interfaccia utente della schermata del negozio
+    // Build the shop screen UI
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -98,7 +98,7 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
-  //nome negozio + contatore monete
+  // Shop name + coin counter
   Widget _buildHeader(String chickName, int coins) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -155,7 +155,7 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
   
-  //barra con le categorie disponibili nel negozio, evidenzia la categoria selezionata
+  // Tab bar with the available shop categories; highlights the selected one
   Widget _buildTabs() {
     return Container(
       padding: const EdgeInsets.all(4),
@@ -173,8 +173,8 @@ class _ShopScreenState extends State<ShopScreen> {
           };
           return Expanded(
             child: GestureDetector(
-              // Aggiorna la categoria selezionata e deseleziona l'oggetto selezionato
-              // per evitare che un oggetto di una categoria rimanga selezionato quando si passa a un'altra categoria
+              // Updates the selected category and deselects the current item
+              // to prevent an item from one category staying selected when switching to another
               onTap: () => setState(() {
                 _currentCategory = cat;
                 _selectedItem = null;
@@ -205,12 +205,12 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
-  //griglia con gli oggetti disponibili nella categoria selezionata
+  // Grid displaying the available items in the selected category
   Widget _buildGrid(int coins, UserProvider userProvider) {
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(), //griglia delega interamente lo scrolling al contenitore padre
+      physics: const NeverScrollableScrollPhysics(), // Grid delegates scrolling entirely to the parent container
       crossAxisSpacing: 14,
       mainAxisSpacing: 14,
       childAspectRatio: 1.1,
@@ -218,12 +218,12 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
-  // Verifica se l'oggetto è posseduto di base o acquistato dall'utente
+  // Checks if the item is owned by default or has been purchased by the user
   bool _isOwned(ShopItem item, UserProvider userProvider) {
     return item.owned || userProvider.ownedItems.contains(item.id);
   }
   
-  //per ogni oggetto, mostra nome, icona, prezzo e stato (acquistato/non)
+  // For each item, displays name, icon, price, and status (owned/not owned)
   Widget _buildItemCard(ShopItem item, int coins, UserProvider userProvider) {
     final bool isSelected = _selectedItem?.id == item.id;
     final bool isOwned = _isOwned(item, userProvider);
@@ -260,7 +260,7 @@ class _ShopScreenState extends State<ShopScreen> {
                 ),
               ),
               const SizedBox(height: 3),
-              //Se l'oggetto è della categoria colori (e non è giallo) mostra "coming soon" 
+              // If the item belongs to the colors category (and is not yellow) show "coming soon"
               if (_currentCategory == ShopCategory.colors && !isOwned)
                 const Text(
                   '🔒 Coming Soon',
@@ -303,7 +303,7 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
-  //compare stato dell'oggetto selezionato 
+  // Shows the status of the selected item
   Widget _buildActionBar(int coins, UserProvider userProvider) {
   final item = _selectedItem;
   if (_currentCategory == ShopCategory.colors && _selectedItem != null && !_isOwned(_selectedItem!, userProvider)) {
@@ -317,7 +317,7 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
   
-  // Mostra messaggio in base allo stato dell'oggetto selezionato e alle monete disponibili
+  // Shows a message based on the selected item's status and available coins
   if (item == null) {
     return _actionContainer(
         color: Colors.white,
@@ -329,7 +329,7 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
   final bool isOwned = _isOwned(item, userProvider);
-  // Determina se è equipaggiato controllando la proprietà corrispondente nel provider
+  // Determines if the item is equipped by checking the corresponding provider property
   bool isEquipped = false;
   if (_currentCategory == ShopCategory.habitat) {
     isEquipped = userProvider.equippedBackground == item.id;
@@ -340,7 +340,7 @@ class _ShopScreenState extends State<ShopScreen> {
     isEquipped = effectiveColor == item.id;
   }
   if (isEquipped) {
-    // Per gli item di default (habitat_0 e color_0) non ha senso fare unequip
+    // Default items (habitat_0 and color_0) cannot be unequipped
     final bool isDefault = item.id == 'habitat_0' || item.id == 'color_0';
     return _actionContainer(
       color: AppColors.green.withOpacity(0.12),
@@ -435,7 +435,7 @@ class _ShopScreenState extends State<ShopScreen> {
   );
 }
 
-// Contenitore per il messaggio di stato dell'oggetto selezionato
+// Container widget for the selected item's status message
 Widget _actionContainer({required Color color, required Widget child}) {
   return Container(
     width: double.infinity,

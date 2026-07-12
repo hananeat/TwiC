@@ -18,13 +18,13 @@ class SplashLogoScreen extends StatefulWidget {
 class _SplashLogoScreenState extends State<SplashLogoScreen>
     with TickerProviderStateMixin {
 
-  // Un controller per ogni parola — controlla quando appare
+  // One animation controller per word — controls when each word appears
   late AnimationController _tController;
   late AnimationController _wController;
   late AnimationController _iController;
   late AnimationController _cController;
 
-  // Controlla la fase finale — le parole spariscono e rimane TwiC
+  // Controls the final phase — the words disappear and only TwiC remains
   late AnimationController _finalController;
 
   late Animation<double> _tAnim;
@@ -32,12 +32,12 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
   late Animation<double> _iAnim;
   late Animation<double> _cAnim;
 
-  // Controlla l'apparizione di TwiC grande
+  // Controls the appearance of the large TwiC text
   late Animation<double> _twicShow;
-  // Controlla la dimensione di TwiC (cresce)
+  // Controls the size of TwiC (grows from small to large)
   late Animation<double> _twicSize;
 
-  bool _showFinalTwiC = false; // quando true mostra TwiC grande
+  bool _showFinalTwiC = false; // when true, shows the large TwiC text
 
 
 
@@ -56,16 +56,16 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
     _finalController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 600));
 
-    // Ogni parola appare con un fade (da invisibile a visibile)
+    // Each word appears with a fade-in animation (from invisible to visible)
     _tAnim = Tween<double>(begin: 0, end: 1).animate(_tController);
     _wAnim = Tween<double>(begin: 0, end: 1).animate(_wController);
     _iAnim = Tween<double>(begin: 0, end: 1).animate(_iController);
     _cAnim = Tween<double>(begin: 0, end: 1).animate(_cController);
 
-    // TwiC appare (da 0 a 1)
+    // TwiC fades in (opacity from 0 to 1)
     _twicShow = Tween<double>(begin: 0, end: 1).animate(_finalController);
 
-    // TwiC cresce (da piccolo a grande)
+    // TwiC grows in size (from small to large font)
     _twicSize = Tween<double>(begin: 24, end: 72).animate(
       CurvedAnimation(parent: _finalController, curve: Curves.easeOut),
     );
@@ -75,35 +75,35 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
 
   Future<void> _startAnimation() async {
     await Future.delayed(const Duration(milliseconds: 400));
-    _tController.forward(); // appare "Tiny"
+    _tController.forward(); // "Tiny" appears
 
     await Future.delayed(const Duration(milliseconds: 500));
-    _wController.forward(); // appare "Wellness"
+    _wController.forward(); // "Wellness" appears
 
     await Future.delayed(const Duration(milliseconds: 500));
-    _iController.forward(); // appare "interactive"
+    _iController.forward(); // "interactive" appears
 
     await Future.delayed(const Duration(milliseconds: 500));
-    _cController.forward(); // appare "Chick"
+    _cController.forward(); // "Chick" appears
 
-    // Aspetta un momento con tutto visibile
+    // Wait a moment with all words visible
     await Future.delayed(const Duration(milliseconds: 900));
 
-    // Mostriamo TwiC e nascondiamo le parole
+    // Show the final TwiC text and hide the individual words
     setState(() => _showFinalTwiC = true);
     _finalController.forward();
 
-    // Aspetta e vai alla destinazione corretta
+    // Wait and navigate to the correct destination
     await Future.delayed(const Duration(milliseconds: 1200));
     if (mounted) {
       final sp = await SharedPreferences.getInstance();
       
-      // Controlliamo se i token sono validi effettuando un refresh
+      // Check if the tokens are still valid by attempting a refresh
       final impact = Impact();
       final refreshResult = await impact.refreshTokens();
       final hasAccess = refreshResult == 200;
       
-      // Controlliamo se l'onboarding è completato (nome del pulcino presente)
+      // Check if onboarding has been completed (chick name is present)
       final chickName = sp.getString('chickName');
       final hasChickName = chickName != null && chickName.isNotEmpty;
 
@@ -140,14 +140,14 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Padding(
-        // Padding a sinistra — tutto allineato a sinistra
+        // Left padding — all content is left-aligned
         padding: const EdgeInsets.only(left: 48.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
-          // ↑ CrossAxisAlignment.start = allinea tutto a sinistra
+          // ↑ CrossAxisAlignment.start = aligns everything to the left
           children: [
-            // Pulcino animato in alto (invece dell'emoji statica)
+            // Animated chick at the top (replaces the static emoji)
             Lottie.asset(
               'assets/hatching_chick.json',
               width: 140,
@@ -155,15 +155,15 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
             ),
             const SizedBox(height: 16),
 
-            // Quando _showFinalTwiC è false mostriamo le parole
-            // Quando è true mostriamo TwiC grande
+            // When _showFinalTwiC is false, show the individual words
+            // When true, show the large TwiC text
             if (!_showFinalTwiC) ...[
               _buildRow('T', 'iny', _tAnim),
               _buildRow('W', 'ellness', _wAnim),
               _buildRow('i', 'nteractive', _iAnim),
               _buildRow('C', 'hick', _cAnim),
             ] else ...[
-              // TwiC grande che appare e cresce (con font Poppins e colore scuro coerente)
+              // Large TwiC text that fades in and grows (using Poppins font and consistent dark color)
               FadeTransition(
                 opacity: _twicShow,
                 child: AnimatedBuilder(
@@ -174,7 +174,7 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
                       style: GoogleFonts.poppins(
                         fontSize: _twicSize.value,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textDark, // Stesso colore scuro della login
+                        color: AppColors.textDark, // Same dark color as the login screen
                       ),
                     );
                   },
@@ -187,23 +187,23 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
     );
   }
 
-  // Costruisce una riga: lettera maiuscola + resto della parola
+  // Builds a row: uppercase acronym letter + the rest of the word
   Widget _buildRow(String letter, String rest, Animation<double> anim) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Lettera dell'acronimo — sempre visibile e in grassetto
+          // Acronym letter — always visible and bold
           Text(
             letter,
             style: GoogleFonts.poppins(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: AppColors.green, // Verde per le lettere principali dell'acronimo
+              color: AppColors.green, // Green for the main acronym letters
             ),
           ),
-          // Resto della parola — appare con il fade
+          // Rest of the word — appears with the fade-in animation
           FadeTransition(
             opacity: anim,
             child: Text(
@@ -211,7 +211,7 @@ class _SplashLogoScreenState extends State<SplashLogoScreen>
               style: GoogleFonts.poppins(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textDark, // Testo scuro coordinato
+                color: AppColors.textDark, // Coordinated dark text color
               ),
             ),
           ),

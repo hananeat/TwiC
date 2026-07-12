@@ -1,11 +1,16 @@
+// MoodScreen: allows the user to log their daily mood (emoji) and select
+// detail chips (e.g. "Tired", "Exam stress") for a specific date.
+// On first check-in of the day, the user earns +5 stars (coins).
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart'; // For formatting the date displayed in the header
 import '../providers/user_provider.dart';
 import 'package:TwiC/utils/app_colors.dart';
 
+// StatefulWidget because the screen holds mutable state (selected mood, chips, saving flag)
 class MoodScreen extends StatefulWidget {
-  final DateTime? date;
+  final DateTime? date; // Optional date parameter; if null, defaults to today
   const MoodScreen({super.key, this.date});
 
   @override
@@ -13,14 +18,18 @@ class MoodScreen extends StatefulWidget {
 }
 
 class _MoodScreenState extends State<MoodScreen> {
-  int _selectedMoodIndex = 2; // Default to neutral 😐 
-  List<String> _selectedChips = ['tired']; // Default to "Tired" 
-  bool _isSaving = false;
-  bool _isAlreadySaved = false;
-  bool _isLoading = true;
+  // --- Local state variables ---
+  int _selectedMoodIndex = 2; // Currently selected emoji index (0-4). Default: neutral 😐
+  List<String> _selectedChips = ['tired']; // Currently selected detail chips. Default: "Tired"
+  bool _isSaving = false; // True while the save operation is in progress (disables button)
+  bool _isAlreadySaved = false; // True if the user has already saved a check-in for this date
+  bool _isLoading = true; // True until provider data has been loaded into local state
 
+  // The 5 mood emojis displayed as selectable circles (index 0 = sad, 4 = very happy)
   final List<String> _emojis = ['😔', '😟', '😐', '🙂', '😄'];
   
+  // Detail chips: each chip has a unique id, a display label, a selected border color,
+  // and a soft background color. These are toggled on/off by tapping.
   final List<Map<String, dynamic>> _chipData = [
     {
       'id': 'studied',
@@ -68,15 +77,20 @@ class _MoodScreenState extends State<MoodScreen> {
     });
   }
 
+  // Initializes local state from the UserProvider.
+  // If the provider is still loading data, we register a listener and wait;
+  // otherwise we update immediately.
   void _initFromProvider() {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     if (userProvider.isLoading) {
-      userProvider.addListener(_onProviderUpdated);
+      userProvider.addListener(_onProviderUpdated); // Wait for data to be ready
     } else {
-      _updateLocalState(userProvider);
+      _updateLocalState(userProvider); // Data already available, sync now
     }
   }
 
+  // Callback fired when the UserProvider notifies its listeners.
+  // Once loading is complete, we remove the listener (one-shot) and sync local state.
   void _onProviderUpdated() {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     if (!userProvider.isLoading) {
@@ -85,6 +99,9 @@ class _MoodScreenState extends State<MoodScreen> {
     }
   }
 
+  // Reads the saved mood data for the target date from the provider
+  // and updates the local state variables accordingly.
+  // If no mood was saved yet (returns -1), defaults to neutral (index 2).
   void _updateLocalState(UserProvider userProvider) {
     if (mounted) {
       final targetDate = widget.date ?? DateTime.now();
@@ -113,25 +130,29 @@ class _MoodScreenState extends State<MoodScreen> {
     super.dispose();
   }
 
+  // Saves the current mood index and selected chips to the UserProvider.
+  // If this is the first check-in of the day, the user earns +5 stars (coins).
+  // After saving, a success dialog is shown.
   Future<void> _saveCheckIn() async {
     setState(() {
-      _isSaving = true;
+      _isSaving = true; // Disable the button while saving
     });
 
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final targetDate = widget.date ?? DateTime.now();
+    // saveCheckIn returns true if coins were added (first check-in of the day)
     final coinsAdded = await userProvider.saveCheckIn(_selectedMoodIndex, _selectedChips, date: targetDate);
 
     if (mounted) {
       setState(() {
-        _isAlreadySaved = true;
+        _isAlreadySaved = true; // Mark as saved so the button text changes to "Update"
         _isSaving = false;
       });
 
-      // Show a premium Success Dialog with the hatching chick Lottie animation!
+      // Show a success dialog informing the user about the saved check-in
       showDialog(
         context: context,
-        barrierDismissible: false,
+        barrierDismissible: false, // User must tap the button to dismiss
         builder: (BuildContext context) {
           return Dialog(
             shape: RoundedRectangleBorder(
@@ -140,9 +161,10 @@ class _MoodScreenState extends State<MoodScreen> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisSize: MainAxisSize.min, // Dialog wraps its content height
                 children: [
                   const SizedBox(height: 16),
+                  // Title changes based on whether coins were earned or mood was just updated
                   Text(
                     coinsAdded ? 'Check-in Saved! 🎉' : 'Mood Updated!',
                     style: const TextStyle(
@@ -152,6 +174,7 @@ class _MoodScreenState extends State<MoodScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
+                  // Subtitle: shows reward info on first save, or update confirmation
                   Text(
                     coinsAdded
                         ? 'You earned +5 stars! ${userProvider.chickName} is super happy!'
@@ -163,9 +186,10 @@ class _MoodScreenState extends State<MoodScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
+                  // Dismiss button to close the dialog
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      Navigator.of(context).pop(); // Close the dialog
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFFD158),
@@ -194,13 +218,16 @@ class _MoodScreenState extends State<MoodScreen> {
     }
   }
   
-  //Generate the insight text based on the selected chips.
+  // Generates a personalized insight message based on the selected chips.
+  // If no chips are selected, shows a prompt encouraging the user to select some.
+  // The message combines chip descriptions into a natural-language sentence
+  // and appends motivational advice.
   String _getInsightText(List<String> chips, String chickName) {
     if (chips.isEmpty) {
       return "Select what happened today to get insights from $chickName!";
     }
     
-    // Insight text of chips
+    // Maps each chip ID to a descriptive phrase used to build the insight sentence
     final Map<String, String> descriptions = {
       'studied': ' you put time and effort into your goals',
       'tired': ' it\'s okay to slow down and rest if you need to',
@@ -210,6 +237,7 @@ class _MoodScreenState extends State<MoodScreen> {
       'relaxed': ' you took time to relax and recharge, which is important for your well-being',
     };
 
+    // Collect the description phrases for all currently selected chips
     List<String> activePhrases = [];
     for (var chip in chips) {
       if (descriptions.containsKey(chip)) {
@@ -217,7 +245,8 @@ class _MoodScreenState extends State<MoodScreen> {
       }
     }
 
-    //Build the final summary string
+    // Build the final summary string by joining the phrases with commas.
+    // Handles 1, 2, or 3+ phrases with proper grammar.
     String summary = "";
     if (activePhrases.length == 1) {
       summary = "Today${activePhrases[0]}.";
@@ -228,7 +257,8 @@ class _MoodScreenState extends State<MoodScreen> {
       String last = activePhrases.last;
       summary = "Today$primary ;$last.";
     }
-    //Generate advice text
+    // Append motivational advice at the end of the insight.
+    // If the user is stressed about exams, show a specific supportive message.
     String advice = "";
     if (chips.contains('exam_stress')) {
       advice = " Make sure to listen to your body and take breaks when needed."; 
@@ -240,6 +270,7 @@ class _MoodScreenState extends State<MoodScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // While provider data is loading, show a centered spinner
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: AppColors.background,
@@ -251,12 +282,13 @@ class _MoodScreenState extends State<MoodScreen> {
       );
     }
 
+    // Consumer rebuilds the UI whenever UserProvider notifies listeners
     return Consumer<UserProvider>(
       builder: (context, userProvider, child) {
         return Scaffold(
           backgroundColor: AppColors.background,
           body: SafeArea(
-            child: SingleChildScrollView(
+            child: SingleChildScrollView( // Scrollable to handle small screens / keyboard
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,7 +332,8 @@ class _MoodScreenState extends State<MoodScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Mood selector Emojis
+                  // Displays 5 emoji circles in a row. The selected one gets a
+                  // green border and glow shadow; unselected ones are plain.
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: List.generate(_emojis.length, (index) {
@@ -308,7 +341,7 @@ class _MoodScreenState extends State<MoodScreen> {
                       return GestureDetector(
                         onTap: () {
                           setState(() {
-                            _selectedMoodIndex = index;
+                            _selectedMoodIndex = index; // Update the selected mood
                           });
                         },
                         child: Container(
@@ -355,7 +388,7 @@ class _MoodScreenState extends State<MoodScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // "Anything in particular?"
+
                   const Text(
                     'Anything in particular?',
                     style: TextStyle(
@@ -366,7 +399,10 @@ class _MoodScreenState extends State<MoodScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Detail Chips Wrap
+                  // Uses Wrap to flow chips into multiple rows.
+                  // Each chip toggles on/off independently. Selected chips get
+                  // a white background with colored border; unselected ones use
+                  // a soft pastel background.
                   Wrap(
                     spacing: 12,
                     runSpacing: 12,
@@ -379,6 +415,7 @@ class _MoodScreenState extends State<MoodScreen> {
 
                       return GestureDetector(
                         onTap: () {
+                          // Toggle chip selection on/off
                           setState(() {
                             if (isSelected) {
                               _selectedChips.remove(chipId);
@@ -387,6 +424,7 @@ class _MoodScreenState extends State<MoodScreen> {
                             }
                           });
                         },
+                        // AnimatedContainer smoothly transitions colors/borders on selection change
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           padding: const EdgeInsets.symmetric(
@@ -464,12 +502,13 @@ class _MoodScreenState extends State<MoodScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Save check-in Button
+                  // Disabled while saving (_isSaving). Shows "Save check-in (+5 coins)"
+                  // on first save, or "Update check-in" if already saved for this date.
                   SizedBox(
                     width: double.infinity,
                     height: 56,
                     child: OutlinedButton(
-                      onPressed: _isSaving ? null : _saveCheckIn,
+                      onPressed: _isSaving ? null : _saveCheckIn, // Disabled during save
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: AppColors.green, width: 1.5), // App green border
                         shape: RoundedRectangleBorder(
@@ -481,6 +520,7 @@ class _MoodScreenState extends State<MoodScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          // Button label changes based on whether a check-in exists
                           Text(
                             _isAlreadySaved
                                 ? 'Update check-in'

@@ -1,7 +1,6 @@
 import 'package:intl/intl.dart';
 
 class Sleep {
-  
   // Instance variables
   final DateTime date;
   final int minutesAsleep;
