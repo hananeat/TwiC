@@ -9,8 +9,8 @@ import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 import 'package:TwiC/utils/app_colors.dart';
 
-// StatefulWidget perché la pagina deve "reagire" 
-// quando l'utente scrive nei campi o preme il bottone
+// StatefulWidget because the page needs to "react"
+// when the user types in the fields or presses the button
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -22,18 +22,16 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
 
-  // Controllers: "ascoltano" cosa scrive l'utente nei campi
+  // Controllers: "listen" to what the user types in the fields
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final Impact impact = Impact();
 
-  // Questa variabile controlla se la password è visibile o nascosta
+  // This variable controls whether the password is visible or hidden
   bool _isPasswordVisible = false;
 
-
-
-  // Come nell'onboarding screen, dispose() libera la memoria
-  // quando l'utente lascia questa schermata
+  // As in the onboarding screen, dispose() frees memory
+  // when the user leaves this screen
   @override
   void dispose() {
     _usernameController.dispose();
@@ -41,19 +39,19 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  // Funzione chiamata quando l'utente preme "Login"
+  // Function called when the user presses "Login"
   Future<void> _handleLogin() async {
-    // Chiude la tastiera a schermo
+    // Dismiss the on-screen keyboard
     FocusScope.of(context).unfocus();
     
     final username = _usernameController.text; 
     final password = _passwordController.text;
 
-    // Nascondi eventuali snackbar precedenti prima di mostrarne una nuova
+    // Hide any previous snackbars before showing a new one
     ScaffoldMessenger.of(context).clearSnackBars();
 
     if (username.isEmpty || password.isEmpty) {
-      debugPrint('Rilevati campi vuoti. Mostro la SnackBar.');
+      debugPrint('Empty fields detected. Showing SnackBar.');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Username or password missing'),
@@ -70,33 +68,33 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
 
       if (statusCode == 200) {
-        // Legge se l'onboarding è già stato fatto in precedenza
+        // Check if onboarding has already been completed previously
         final sp = await SharedPreferences.getInstance();
         final chickName = sp.getString('chickName');
         final hasChickName = chickName != null && chickName.isNotEmpty;
 
         if (!mounted) return;
 
-        // Ricarica tutti i dati di gioco e il profilo utente in memoria
+        // Reload all game data and the user profile into memory
         await Provider.of<UserProvider>(context, listen: false).loadUserData();
 
         if (!mounted) return;
 
         if (hasChickName) {
-          // Successo e onboarding già fatto: naviga alla HomePage
+          // Success and onboarding already done: navigate to HomePage
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomePage()),
           );
         } else {
-          // Successo ma onboarding da fare: naviga a Onboarding
+          // Success but onboarding still needed: navigate to Onboarding
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const OnboardingScreen()),
           );
         }
       } else {
-        // Errore credenziali 
+        // Invalid credentials error
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Username or password incorrect'),
@@ -105,11 +103,11 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } catch (e) {
-      debugPrint('Eccezione catturata durante l\'autenticazione: $e');
-      // In caso di eccezione di rete o connessione
+      debugPrint('Exception caught during authentication: $e');
+      // In case of a network or connection exception
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Errore di connessione: $e'),
+          content: Text('Connection error: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -119,13 +117,13 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background, // sfondo giallo chiarissimo
+      backgroundColor: AppColors.background, // very light yellow background
       body: SafeArea(
-        // SafeArea evita che il contenuto finisca sotto
-        // la "frangetta" o la barra in basso dell'iPhone
+        // SafeArea prevents content from going under
+        // the notch or the bottom bar of the iPhone
         child: SingleChildScrollView(
-          // SingleChildScrollView permette di scorrere
-          // quando la tastiera si apre e "spinge su" i widget
+          // SingleChildScrollView allows scrolling
+          // when the keyboard opens and pushes the widgets up
           padding: const EdgeInsets.symmetric(horizontal: 32.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -178,7 +176,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  // Animazione pulcino
+                  // Chick animation
                   Lottie.asset(
                     'assets/baby-chick.json',
                     width: 100,
@@ -190,11 +188,11 @@ class _LoginPageState extends State<LoginPage> {
 
               const SizedBox(height: 36),
 
-              // --- CAMPO EMAIL ---
-              // TextField è il widget di Flutter per i campi di testo
+              // --- USERNAME FIELD ---
+              // TextField is the Flutter widget for text input fields
               TextField(
-                controller: _usernameController, // collegato al controller
-                keyboardType: TextInputType.emailAddress, // tastiera con la @
+                controller: _usernameController, // linked to the controller
+                keyboardType: TextInputType.text, // keyboard 
                 decoration: InputDecoration(
                   labelText: 'Username',
                   labelStyle: const TextStyle(color: Colors.grey),
@@ -207,7 +205,7 @@ class _LoginPageState extends State<LoginPage> {
                     borderSide: BorderSide.none,
                   ),
                   focusedBorder: OutlineInputBorder(
-                    // focusedBorder = bordo quando il campo è selezionato
+                    // focusedBorder = border when the field is focused
                     borderRadius: BorderRadius.circular(16),
                     borderSide: const BorderSide(color: AppColors.green, width: 2),
                   ),
@@ -216,11 +214,11 @@ class _LoginPageState extends State<LoginPage> {
 
               const SizedBox(height: 16),
 
-              // --- CAMPO PASSWORD ---
+              // --- PASSWORD FIELD ---
               TextField(
                 controller: _passwordController,
                 obscureText: !_isPasswordVisible, 
-                // obscureText: true = mostra i pallini ••••
+                // obscureText: true = shows dots ••••
                 decoration: InputDecoration(
                   labelText: 'Password',
                   labelStyle: const TextStyle(color: Colors.grey),
@@ -236,8 +234,8 @@ class _LoginPageState extends State<LoginPage> {
                     borderRadius: BorderRadius.circular(16),
                     borderSide: const BorderSide(color: AppColors.green, width: 2),
                   ),
-                  // suffixIcon = icona a DESTRA del campo
-                  // permette di mostrare/nascondere la password
+                  // suffixIcon = icon on the RIGHT side of the field
+                  // allows toggling password visibility
                   suffixIcon: IconButton(
                     icon: Icon(
                       _isPasswordVisible
@@ -246,8 +244,8 @@ class _LoginPageState extends State<LoginPage> {
                       color: Colors.grey,
                     ),
                     onPressed: () {
-                      // setState dice a Flutter di ridisegnare
-                      // il widget con il nuovo valore
+                      // setState tells Flutter to redraw
+                      // the widget with the new value
                       setState(() {
                         _isPasswordVisible = !_isPasswordVisible;
                       });
@@ -258,15 +256,15 @@ class _LoginPageState extends State<LoginPage> {
 
               const SizedBox(height: 32),
 
-              // --- BOTTONE LOGIN ---
+              // --- LOGIN BUTTON ---
               SizedBox(
-                width: double.infinity, // larghezza massima
+                width: double.infinity, // maximum width
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: _handleLogin, // chiama _handleLogin al tap
+                  onPressed: _handleLogin, // calls _handleLogin on tap
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.green, // sfondo verde
-                    foregroundColor: Colors.white, // testo bianco
+                    backgroundColor: AppColors.green, // green background
+                    foregroundColor: Colors.white, // white text
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
@@ -281,19 +279,19 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 24),
 
               /*
-              // --- TESTO SOTTO IL BOTTONE ---
-              // Per ora è solo estetico, in futuro può
-              // portare a una schermata di registrazione
+              // --- TEXT BELOW THE BUTTON ---
+              // For now it's just decorative, in the future it could
+              // lead to a registration screen
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Non hai un account? ',
+                  const Text('Don\'t have an account? ',
                     style: TextStyle(color: Colors.grey)),
                   GestureDetector(
                     onTap: () {
                     },
                     child: const Text(
-                      'Registrati',
+                      'Sign Up',
                       style: TextStyle(
                         color: AppColors.green,
                         fontWeight: FontWeight.bold,

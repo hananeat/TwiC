@@ -1,3 +1,7 @@
+// ProfileScreen is a Flutter widget that displays the user's profile information
+// and allows the user to edit it. It uses the UserProvider to get the user's data
+// and the UserProvider to update it.
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:TwiC/providers/user_provider.dart';
@@ -13,7 +17,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isEditing = false;
 
-  // Controllers per i campi di testo
+  // Controllers for the text input fields
   late TextEditingController _chickNameController;
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
@@ -39,7 +43,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-  /// Entra in modalità modifica
+  /// Enters edit mode
   void _startEditing() {
     final user = context.read<UserProvider>();
     setState(() {
@@ -52,20 +56,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
-  /// Annulla le modifiche e torna alla visualizzazione
+  /// Cancels the changes and returns to view mode
   void _cancelEditing() {
     setState(() {
       _isEditing = false;
     });
   }
 
-  /// Salva le modifiche nel UserProvider (e quindi in SharedPreferences)
+  /// Saves the changes to UserProvider (and therefore to SharedPreferences)
   Future<void> _saveChanges() async {
     final chickName = _chickNameController.text.trim();
     final firstName = _firstNameController.text.trim();
     final lastName = _lastNameController.text.trim();
 
-    // Validazione
+    // Validation
     if (chickName.isEmpty || firstName.isEmpty || lastName.isEmpty || _selectedDateOfBirth == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -78,10 +82,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final user = context.read<UserProvider>();
 
-    // Salva il nome del pulcino
+    // Save the chick name
     await user.setChickName(chickName);
 
-    // Salva il profilo utente
+    // Save the user profile
     await user.setUserProfile(firstName, lastName, _selectedSex, _selectedDateOfBirth!);
 
     if (mounted) {
@@ -138,7 +142,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // --- Campi modificabili ---
+                    // --- Editable fields ---
                     _isEditing
                         ? _editableTile(Icons.pets_rounded, 'Chick Name', _chickNameController)
                         : _profileTile(Icons.pets_rounded, 'Chick Name', user.chickName),
@@ -165,7 +169,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 : 'Not set',
                           ),
 
-                    // --- Campi non modificabili ---
+                    // --- Read-only fields ---
                     _profileTile(Icons.hourglass_bottom_rounded, 'Age', '${user.age} years'),
                     _profileTile(Icons.star, 'Stars', '${user.stars}'),
                   ],
@@ -175,9 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
-  //  Widget di sola lettura (uguale all'originale)
-  // ──────────────────────────────────────────────────────────────────
+  // Read-only profile tile widget
   Widget _profileTile(IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -211,9 +213,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
-  //  Widget modificabili (TextField)
-  // ──────────────────────────────────────────────────────────────────
+  // Editable profile tile widget (TextField)
   Widget _editableTile(IconData icon, String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -257,9 +257,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
-  //  Selettore sesso (stesso stile dell'onboarding)
-  // ──────────────────────────────────────────────────────────────────
+  // Sex selector (same style as the onboarding screen)
   Widget _editableSexTile() {
     final options = [
       {'id': 'Female', 'label': '♀ Female'},
@@ -336,9 +334,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
-  //  Date picker per la data di nascita
-  // ──────────────────────────────────────────────────────────────────
+  // Date picker for the date of birth
   Widget _editableDateTile() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),

@@ -1,16 +1,19 @@
 import 'package:intl/intl.dart';
 
 class Exercise {
+  // Instance variables
   final DateTime timestamp;
   final String activityName;
   final int duration; //in milliseconds
 
+  // Constructor
   Exercise({
     required this.timestamp,
     required this.activityName,
     required this.duration,
   });
 
+  // Constructor for creating an Exercise object from a JSON map (e.g., API response)
   Exercise.fromJson(String date, Map<String, dynamic> json)
       : timestamp = DateFormat('yyyy-MM-dd HH:mm:ss').parse('$date ${json["time"]}'),
         activityName = json["activityName"].toString(),

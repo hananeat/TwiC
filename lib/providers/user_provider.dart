@@ -1,6 +1,8 @@
-// UserProvider manages the user's profile state, including the virtual chick's name,
-// earned stars, and daily mood check-in data. It reactively notifies the UI using 
-// ChangeNotifier and persists data locally using SharedPreferences.
+// UserProvider is a ChangeNotifier that manages all user-related state,
+// including profile data (name, sex, date of birth), the virtual chick's
+// growth system (XP, level, vitality), daily mood check-ins, earned stars,
+// shop inventory (owned and equipped items), and goal reward claiming.
+// It reactively notifies the UI and persists data locally via SharedPreferences.
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -107,8 +109,7 @@ class UserProvider extends ChangeNotifier {
     loadUserData();
   }
 
-  // Method that loads the user data from SharedPreferences
-  // Method 1: Load data asynchronously from SharedPreferences
+  // Method 1: asynchronous method that loads the user data from SharedPreferences
   Future<void> loadUserData() async {
     if (_isDataLoaded) return;
     _isLoading = true;
@@ -220,7 +221,7 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  // Method to set and save user profile data
+  // Method 3: set and save user profile data
   Future<void> setUserProfile(String firstName, String lastName, String sex, DateTime dateOfBirth) async {
     _firstName = firstName;
     _lastName = lastName;
@@ -239,7 +240,7 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  // Method 3: Save the user's mood and chips/tags (to SharedPreferences)
+  // Method 4: Save the user's mood and chips/tags (to SharedPreferences)
   // If moodDone is false for the given date, add 5 stars to the user's stars
   // Set moodDone to true for that date
   // Save the user's mood and chips/tags to SharedPreferences
@@ -286,7 +287,7 @@ class UserProvider extends ChangeNotifier {
     return coinsAdded;
   }
 
-  // Method to update and save the daily vitality score for a given day
+  // Method 5: Update and save the daily vitality score for a given day
   Future<void> updateDailyVitality(String dateKey, double vitality) async {
     // Only update if the value has changed
     if (_dailyVitalityMap[dateKey] == vitality) return;
@@ -346,9 +347,6 @@ class UserProvider extends ChangeNotifier {
       lastDate = referenceDate.subtract(const Duration(days: 1));
     }
     
-    debugPrint('[TwiC] checkAndProcessPastXP: referenceDate=$referenceDate, _lastXpUpdateDate=$_lastXpUpdateDate, lastDate=$lastDate');
-    
-    
     // Loop through all days from lastDate + 1 up to yesterday (inclusive) relative to referenceDate
     DateTime processDate = lastDate.add(const Duration(days: 1));
     final yesterday = DateTime(referenceDate.year, referenceDate.month, referenceDate.day).subtract(const Duration(days: 1));
@@ -362,7 +360,6 @@ class UserProvider extends ChangeNotifier {
         
         // Get the vitality of that day (default to 0.0 if they didn't log in)
         final dayVitality = _dailyVitalityMap[key] ?? 0.0;
-        debugPrint('[TwiC] Loop: processDate=$processDate, key=$key, dayVitality=$dayVitality');
         
         // Process XP for this day
         await _addXPPoints(dayVitality.round(), sp);
